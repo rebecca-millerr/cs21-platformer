@@ -15,11 +15,6 @@ export default function Game() {
     if (previousTimeRef.current !== undefined) {
       // TODO: actually replace this state with update from server
       setMap((prevMap) => [...prevMap]);
-      // setMap((prevMap) => {
-      //   prevMap.shift();
-      //   prevMap.push('000');
-      //   return [...prevMap];
-      // });
     }
     previousTimeRef.current = time;
     setTimeElapsed(time);
@@ -33,6 +28,7 @@ export default function Game() {
 
   return (
     <div>
+      {/* TODO: update server state when col added to map */}
       <Map map={map} updateMap={setMap} time={timeElapsed} />
     </div>
   );

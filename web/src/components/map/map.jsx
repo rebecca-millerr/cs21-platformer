@@ -8,6 +8,7 @@ import {
   BLOCK_SIZE,
   MOVING_SPEED,
 } from './constants';
+import styles from './map.module.css';
 
 export default function Map({ map, updateMap, time }) {
   useEffect(() => {
@@ -45,13 +46,12 @@ export default function Map({ map, updateMap, time }) {
   }, [time, updateMap]);
 
   return (
-    <>
-      <canvas
-        width={BLOCKS_ACROSS * BLOCK_SIZE}
-        height={BLOCKS_DOWN * BLOCK_SIZE}
-        id="map-canvas"
-      />
-    </>
+    <canvas
+      width={BLOCKS_ACROSS * BLOCK_SIZE}
+      height={BLOCKS_DOWN * BLOCK_SIZE}
+      id="map-canvas"
+      className={styles.mapCanvas}
+    />
   );
 }
 
