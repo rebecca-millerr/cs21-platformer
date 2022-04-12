@@ -1,1 +1,4 @@
 .DS_Store
+
+backend/deps/
+backend/_rel/
