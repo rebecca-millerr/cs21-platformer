@@ -2,4 +2,5 @@
 
 backend/deps/
 backend/_rel/
+backend/ebin/
 *.beam
