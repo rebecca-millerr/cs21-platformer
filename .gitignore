@@ -2,3 +2,4 @@
 
 backend/deps/
 backend/_rel/
+*.beam
