@@ -1,2 +1,1 @@
-export { default as Map } from './map';
-export { getDefaultMap } from './utils';
+export { default } from './map';
