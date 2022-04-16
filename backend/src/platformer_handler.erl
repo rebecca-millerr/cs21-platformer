@@ -13,9 +13,13 @@ websocket_init(State) ->
 	{ok, State}.
 
 websocket_handle({text, Json}, State) ->
-    Map = jsx:decode(Json),
-    io:format("received JSON: ~w~n", [Map]),
-	{reply, {text, Json}, State};
+    case (jsx:is_json(Json)) of
+        true ->  Map = jsx:decode(Json),
+                 io:format("received JSON: ~w~n", [Map]),
+	             {reply, {text, Json}, State};
+        false -> Res = jsx:encode([{<<"error">>, <<"Message is not valid JSON">>}]),
+                 {reply, {text, Res}, State}
+    end;
 websocket_handle({binary, Data}, State) ->
     io:format("received binary: ~w~n", [Data]),
 	{reply, {binary, Data}, State};
