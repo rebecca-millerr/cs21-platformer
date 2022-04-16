@@ -31,7 +31,7 @@ export default function Map({ map, updateMap, time }) {
       const pixelRow = Math.floor(row / BLOCK_SIZE);
       for (let col = 0 - adjustedX; col < canvas.width; col += BLOCK_SIZE) {
         const pixelCol = Math.floor(col / BLOCK_SIZE) + 1;
-        fillBlock(col, row, map[getBlockIndex(pixelRow, pixelCol)]);
+        fillBlock(col, row, map[getBlockIndex(pixelRow, pixelCol)].display);
       }
     }
 
@@ -56,7 +56,12 @@ export default function Map({ map, updateMap, time }) {
 }
 
 Map.propTypes = {
-  map: PropTypes.array.isRequired,
+  map: PropTypes.arrayOf(
+    PropTypes.shape({
+      display: PropTypes.string,
+      absoluteCol: PropTypes.number,
+    })
+  ).isRequired,
   updateMap: PropTypes.func.isRequired,
   time: PropTypes.number,
 };
