@@ -12,11 +12,12 @@ init(Req, State) ->
 websocket_init(State) ->
 	{ok, State}.
 
-websocket_handle({text, Data}, State) ->
-    io:format("received: ~s~n", [Data]),
-	{reply, {text, Data}, State};
+websocket_handle({text, Json}, State) ->
+    Map = jsx:decode(Json),
+    io:format("received JSON: ~w~n", [Map]),
+	{reply, {text, Json}, State};
 websocket_handle({binary, Data}, State) ->
-    io:format("received: ~w~n", [Data]),
+    io:format("received binary: ~w~n", [Data]),
 	{reply, {binary, Data}, State};
 websocket_handle(_Frame, State) ->
 	{ok, State}.
