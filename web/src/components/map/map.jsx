@@ -7,10 +7,15 @@ import {
   BLOCKS_DOWN,
   BLOCK_SIZE,
   MOVING_SPEED,
+  VISIBLE_BLOCKS_ACROSS,
 } from './constants';
 import styles from './map.module.css';
 
+// TODO: replace this with actual random color for current user
+const CURR_BUILDER_COLOR = '#c934eb';
+
 export default function Map({ map, updateMap, time }) {
+  // updates drawing on canvas based on current map
   useEffect(() => {
     const canvas = document.getElementById('map-canvas');
     const context = canvas.getContext('2d');
@@ -44,6 +49,35 @@ export default function Map({ map, updateMap, time }) {
     // and map is updated when time updates anyway
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time, updateMap]);
+
+  // listens for builder interactions to update map
+  useEffect(() => {
+    const getMousePosition = (event) => {
+      const canvas = document.getElementById('map-canvas');
+      const rect = canvas.getBoundingClientRect();
+      const { top, right, bottom, left } = rect;
+
+      const targetX = event.clientX;
+      const targetY = event.clientY;
+
+      // vertically flipped for some reason
+      const x = targetX > left && targetX < right ? targetX - left : null;
+      const y = targetY > top && targetY < bottom ? targetY - top : null;
+
+      // if clicked within the image
+      if (x != null && y != null) {
+        const row = Math.floor((y / canvas.height) * BLOCKS_DOWN);
+        const col = Math.floor((x / canvas.width) * VISIBLE_BLOCKS_ACROSS);
+
+        const { absoluteCol } = map[getBlockIndex(row, col)];
+        console.log(row, col, absoluteCol);
+      }
+    };
+
+    window.addEventListener('mousedown', getMousePosition);
+
+    return () => window.removeEventListener('mousedown', getMousePosition);
+  }, [map]);
 
   return (
     <canvas
