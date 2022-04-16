@@ -1,4 +1,6 @@
 import React, { useMemo, useCallback, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, DEFAULT_BLOCK as DEFAULT_BLOCK_COLOR, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
 
@@ -39,7 +41,8 @@ const drawScene = (context, bodies, offset) => {
   }
 };
 
-export default function Map() {
+
+export default function Map({ allowBuilding }) {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
@@ -88,6 +91,7 @@ export default function Map() {
     requestRef.current = requestAnimationFrame(animate);
   }, [engine, world, viewportMoved]);
 
+  // Initial setup\
   useEffect(() => {
     // Create the ground
     const ground = Matter.Bodies.rectangle(
@@ -118,12 +122,38 @@ export default function Map() {
     };
   }, [world, animate]);
 
+  const createBlock = (event) => {
+    if (!allowBuilding) return;
+
+    const { top, left } = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - left + xOffsetRef.current;
+    const y = event.clientY - top;
+    const row = Math.floor(y / BLOCK_SIZE);
+    const col = Math.floor(x / BLOCK_SIZE);
+    const block = Matter.Bodies.rectangle(
+      (col + 0.5) * BLOCK_SIZE,
+      (row + 0.5) * BLOCK_SIZE,
+      BLOCK_SIZE,
+      BLOCK_SIZE,
+      { isStatic: true, render: { fillStyle: '#c934eb' } },
+    );
+    Matter.Composite.add(world, block);
+  };
+
   return (
     <canvas
       ref={canvasRef}
+      className={cx('mapCanvas')}
       width={BLOCKS_ACROSS * BLOCK_SIZE}
       height={BLOCKS_DOWN * BLOCK_SIZE}
-      className={cx('mapCanvas')}
+      onMouseDown={createBlock}
     />
   );
 }
+
+Map.propTypes = {
+  allowBuilding: PropTypes.bool,
+};
+Map.defaultProps = {
+  allowBuilding: false,
+};

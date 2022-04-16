@@ -10,7 +10,7 @@ export default function Game() {
     <div>
       Player type is {playerType}
       <br />
-      <Map />
+      <Map allowBuilding={playerType === 'builder'} />
     </div>
   );
 }
