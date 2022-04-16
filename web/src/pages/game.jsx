@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Map, getDefaultMap } from 'components/map';
 import useStore from 'store';
+import { useRouter } from 'next/router';
 
 export default function Game() {
   // TODO: magically gets updates from erlang server and populates
@@ -28,6 +29,14 @@ export default function Game() {
   }, [animate]);
 
   const playerType = useStore((state) => state.playerType);
+  const router = useRouter();
+  useEffect(() => {
+    if (!playerType) {
+      router.push('/');
+    }
+  }, [router, playerType]);
+
+  if (!playerType) return null;
 
   return (
     <div>
