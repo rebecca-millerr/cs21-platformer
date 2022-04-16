@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Map, getDefaultMap } from 'components/map';
+import useStore from 'store';
 
 export default function Game() {
   // TODO: magically gets updates from erlang server and populates
@@ -26,8 +27,12 @@ export default function Game() {
     return () => cancelAnimationFrame(requestRef.current);
   }, [animate]);
 
+  const playerType = useStore((state) => state.playerType);
+
   return (
     <div>
+      Player type is {playerType}
+      <br />
       {/* TODO: update server state when col added to map */}
       <Map map={map} updateMap={setMap} time={timeElapsed} />
     </div>

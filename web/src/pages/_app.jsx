@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import 'styles/global.css';
+import 'styles/global.scss';
 
 export default function AppContainer({ Component, pageProps }) {
   return <Component {...pageProps} />;
