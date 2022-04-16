@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import { getBlockIndex, addDefaultColumn } from './utils';
 import {
@@ -15,20 +16,22 @@ import styles from './map.module.css';
 const CURR_BUILDER_COLOR = '#c934eb';
 
 export default function Map({ map, updateMap, time }) {
+  const [deltaX, setDeltaX] = useState(0);
+
+  function fillBlock(colStart, rowStart, color, context) {
+    context.fillStyle = color;
+    context.fillRect(colStart, rowStart, BLOCK_SIZE, BLOCK_SIZE);
+
+    context.beginPath();
+    context.rect(colStart, rowStart, BLOCK_SIZE, BLOCK_SIZE);
+    context.stroke();
+  }
+
   // updates drawing on canvas based on current map
   useEffect(() => {
     const canvas = document.getElementById('map-canvas');
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-
-    function fillBlock(colStart, rowStart, color) {
-      context.fillStyle = color;
-      context.fillRect(colStart, rowStart, BLOCK_SIZE, BLOCK_SIZE);
-
-      context.beginPath();
-      context.rect(colStart, rowStart, BLOCK_SIZE, BLOCK_SIZE);
-      context.stroke();
-    }
 
     const adjustedX = Math.floor(time / MOVING_SPEED) % BLOCK_SIZE;
 
@@ -36,7 +39,12 @@ export default function Map({ map, updateMap, time }) {
       const pixelRow = Math.floor(row / BLOCK_SIZE);
       for (let col = 0 - adjustedX; col < canvas.width; col += BLOCK_SIZE) {
         const pixelCol = Math.floor(col / BLOCK_SIZE) + 1;
-        fillBlock(col, row, map[getBlockIndex(pixelRow, pixelCol)].display);
+        fillBlock(
+          col,
+          row,
+          map[getBlockIndex(pixelRow, pixelCol)].display,
+          context
+        );
       }
     }
 
@@ -44,6 +52,7 @@ export default function Map({ map, updateMap, time }) {
     if (adjustedX === 0) {
       updateMap(addDefaultColumn(map));
     }
+    setDeltaX(adjustedX);
 
     // don't check for map because then everything is double-triggered,
     // and map is updated when time updates anyway
@@ -70,14 +79,28 @@ export default function Map({ map, updateMap, time }) {
         const col = Math.floor((x / canvas.width) * VISIBLE_BLOCKS_ACROSS);
 
         const { absoluteCol } = map[getBlockIndex(row, col)];
-        console.log(row, col, absoluteCol);
+        // TODO: replace this with cast to server to update with this
+        console.log(absoluteCol);
+
+        // TODO: this bugs out if it skips zero a little
+        const tempMap = _.cloneDeep(map);
+        tempMap[getBlockIndex(row, col)].display = CURR_BUILDER_COLOR;
+        updateMap(tempMap);
+
+        const context = canvas.getContext('2d');
+        fillBlock(
+          col * BLOCK_SIZE - deltaX,
+          row * BLOCK_SIZE,
+          CURR_BUILDER_COLOR,
+          context
+        );
       }
     };
 
     window.addEventListener('mousedown', getMousePosition);
 
     return () => window.removeEventListener('mousedown', getMousePosition);
-  }, [map]);
+  }, [map, deltaX, updateMap]);
 
   return (
     <canvas
