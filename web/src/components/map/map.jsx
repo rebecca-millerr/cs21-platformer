@@ -10,6 +10,7 @@ const cx = classNames.bind(styles);
 const drawScene = (context, bodies, offset) => {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
+  // Draw bodies
   bodies.forEach((body) => {
     context.beginPath();
     body.vertices.forEach(({ x, y }) => context.lineTo(x - offset, y));
@@ -17,6 +18,25 @@ const drawScene = (context, bodies, offset) => {
     context.fillStyle = body.render.fillStyle ?? '#000';
     context.fill();
   });
+
+  // Draw grid lines
+  // Latitude lines
+  context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  for (let y = 0; y <= BLOCKS_DOWN; y += 1) {
+    context.beginPath();
+    context.moveTo(0, y * BLOCK_SIZE);
+    context.lineTo(BLOCKS_ACROSS * BLOCK_SIZE, y * BLOCK_SIZE);
+    context.stroke();
+  }
+  // Longitude lines
+  const firstLongitudeLine = Math.floor(offset / BLOCK_SIZE);
+  const lastLongitudeLine = firstLongitudeLine + BLOCKS_ACROSS + 1;
+  for (let x = firstLongitudeLine; x <= lastLongitudeLine; x += 1) {
+    context.beginPath();
+    context.moveTo(x * BLOCK_SIZE - offset, 0);
+    context.lineTo(x * BLOCK_SIZE - offset, BLOCKS_DOWN * BLOCK_SIZE);
+    context.stroke();
+  }
 };
 
 export default function Map() {
@@ -83,7 +103,7 @@ export default function Map() {
     Matter.Composite.add(
       world,
       Matter.Bodies.rectangle(
-        500, 100, BLOCK_SIZE, BLOCK_SIZE,
+        BLOCK_SIZE * (BLOCKS_ACROSS - 2.5), BLOCK_SIZE * 1.5, BLOCK_SIZE, BLOCK_SIZE,
         { render: { fillStyle: DEFAULT_BLOCK_COLOR } },
       ),
     );
