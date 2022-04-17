@@ -28,25 +28,6 @@ export default function Game({ children }) {
     [engine, world, canvasRef, canvasContextRef, xOffsetRef, events],
   );
 
-  /* Keeps the ground underfoot, and "garbage collects" blocks that have exited the left side of the
-     screen */
-  const viewportMoved = useCallback(() => {
-    Matter.Composite.allBodies(world).forEach((body) => {
-      const { vertices } = body;
-      const leftEdge = xOffsetRef.current;
-      // Move ground
-      if (body.label === 'ground') {
-        const width = body.bounds.max.x - body.bounds.min.x;
-        Matter.Body.setPosition(body, { x: leftEdge + width / 2, y: body.position.y });
-      // Garbage collection
-      // Remove objects once they are a full BLOCK_SIZE off screen - not immediately
-      } else if (vertices.every(({ x }) => x < leftEdge - BLOCK_SIZE)) {
-        console.log('removing body that went off screen');
-        Matter.Composite.remove(world, body);
-      }
-    });
-  }, [world]);
-
   // Render loop
   const requestRef = useRef();
   const previousTimeRef = useRef();
@@ -59,37 +40,22 @@ export default function Game({ children }) {
     previousTimeRef.current = time;
     // Move viewport
     xOffsetRef.current += delta * MOVING_SPEED;
-    viewportMoved();
+
     events.emit('beforeFrame', { delta });
+
     // Run physics simulation
     Matter.Engine.update(engine, delta * 1000);
     // Paint the picture
     renderer.draw(gameContext);
+
     events.emit('afterFrame', { delta });
+
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
-  }, [gameContext, engine, renderer, events, viewportMoved]);
+  }, [gameContext, engine, renderer, events]);
 
   // Initial setup
   useEffect(() => {
-    // Create the ground
-    const ground = Matter.Bodies.rectangle(
-      // x, y specify the *center* of the object
-      (BLOCKS_ACROSS * BLOCK_SIZE) / 2,
-      (BLOCKS_DOWN - 0.5) * BLOCK_SIZE,
-      BLOCKS_ACROSS * BLOCK_SIZE,
-      BLOCK_SIZE,
-      { isStatic: true, label: 'ground', render: { fillStyle: COLORS.GROUND } },
-    );
-    Matter.Composite.add(world, ground);
-
-    Matter.Composite.add(
-      world,
-      Matter.Bodies.rectangle(
-        BLOCK_SIZE * (BLOCKS_ACROSS - 2.5), BLOCK_SIZE * 1.5, BLOCK_SIZE, BLOCK_SIZE,
-        { label: 'platform', render: { fillStyle: COLORS.DEFAULT_BLOCK } },
-      ),
-    );
     // Set up canvas / context
     const dpr = window.devicePixelRatio || 1;
     canvasRef.current.width = BLOCKS_ACROSS * BLOCK_SIZE * dpr;
@@ -100,11 +66,26 @@ export default function Game({ children }) {
     // Start the render loop
     requestRef.current = requestAnimationFrame(animate);
     // Clean up
-    return () => {
-      Matter.Composite.remove(world, ground);
-      cancelAnimationFrame(requestRef.current);
-    };
+    return () => cancelAnimationFrame(requestRef.current);
   }, [world, animate]);
+
+  // Garbage collect blocks that have exited the screen
+  useEffect(() => {
+    const collectGarbage = () => {
+      Matter.Composite.allBodies(world).forEach((body) => {
+        const { vertices } = body;
+        const leftEdge = xOffsetRef.current;
+        // Every vertex is off the left edge of the screen by at least BLOCK_SIZE pixels
+        if (vertices.every(({ x }) => x < leftEdge - BLOCK_SIZE)) {
+          console.log('removing body that went off screen');
+          Matter.Composite.remove(world, body);
+        }
+      });
+    };
+    events.on('afterFrame', collectGarbage);
+    return () => events.off('afterFrame', collectGarbage);
+  }, [world, events, xOffsetRef]);
+
 
   return (
     <GameContext.Provider
@@ -112,8 +93,8 @@ export default function Game({ children }) {
     >
       <div className={cx('base')} style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}>
         <canvas ref={canvasRef} className={cx('canvas')} />
+        {children}
       </div>
-      {children}
     </GameContext.Provider>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import Game, { ActiveRunner, LevelEditor } from 'components/Game';
+import Game, { Ground, ActiveRunner, LevelEditor } from 'components/Game';
 
 import useStore from 'store';
 import { useRouter } from 'next/router';
@@ -20,6 +20,7 @@ export default function GamePage() {
       Player type is {playerType}
       <br />
       <Game>
+        <Ground />
         {playerType === 'runner' && <ActiveRunner />}
         {playerType === 'builder' && <LevelEditor />}
 
