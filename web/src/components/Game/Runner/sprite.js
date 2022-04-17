@@ -33,6 +33,7 @@ export default class RunnerSprite {
     this.lastFrameTime = Date.now();
     this.width = spriteWidth;
     this.height = spriteHeight;
+    this.direction = 1;
   }
 
   setState(state) {
@@ -64,13 +65,22 @@ export default class RunnerSprite {
     return getCoordinates(this.getFrame());
   }
 
-  getCanvas() {
+  setDirection(direction) {
+    if (![-1, 1].includes(direction)) return;
+    this.direction = direction;
+  }
+
+  getCanvas(setDirection = null) {
+    if (setDirection) this.direction = setDirection;
+
     const { x, y, width, height } = this.getSpriteCoordinates();
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
+    if (this.direction === -1) ctx.translate(width, 0);
+    ctx.scale(this.direction, 1);
     ctx.drawImage(
       spriteSheet,
       x, y, width, height, // positions on sprite sheet

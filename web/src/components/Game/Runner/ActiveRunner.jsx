@@ -11,6 +11,8 @@ function renderActiveRunner(gameContext) {
 
     const { x, y } = body.position;
     const { sprite } = body.render;
+    if (body.velocity.x < -0.25) sprite.setDirection(-1);
+    else if (body.velocity.x > 0.25) sprite.setDirection(1);
     const renderedRunner = sprite.getCanvas();
     const { width, height } = renderedRunner;
     const xOffset = gameContext.xOffsetRef.current;
