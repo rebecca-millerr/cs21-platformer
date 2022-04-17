@@ -30,12 +30,13 @@
 		
       function onOpen(evt) {
          writeToScreen("CONNECTED");
-         doSend("websocket!!!");
+         doSend(JSON.stringify({a: 1}));
       }
 		
       function onMessage(evt) {
          writeToScreen('<span style = "color: blue;">RESPONSE: ' +
-            evt.data+'</span>'); websocket.close();
+            evt.data+'</span>'); 
+         console.log(evt.data);
       }
 
       function onError(evt) {
