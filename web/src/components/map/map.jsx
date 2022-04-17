@@ -5,7 +5,7 @@ import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './
 import Matter from 'matter-js';
 
 import classNames from 'classnames/bind';
-import styles from './map.module.css';
+import styles from './map.module.scss';
 const cx = classNames.bind(styles);
 
 /* Render the contents of a Matter.js world to a canvas */
