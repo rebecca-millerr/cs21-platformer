@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 
-import Map from 'components/map';
+import Game from 'components/Game';
 import useStore from 'store';
 import { useRouter } from 'next/router';
 
-export default function Game() {
+export default function GamePage() {
   const playerType = useStore((state) => state.playerType);
 
   // Kick out players that have no type (i.e. they navigated to the game page directly)
@@ -18,7 +18,7 @@ export default function Game() {
     <div>
       Player type is {playerType}
       <br />
-      <Map allowBuilding={playerType === 'builder'} createRunner={playerType === 'runner'} />
+      <Game allowBuilding={playerType === 'builder'} createRunner={playerType === 'runner'} />
     </div>
   );
 }

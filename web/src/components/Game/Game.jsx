@@ -6,7 +6,7 @@ import Matter from 'matter-js';
 import { Runner } from './runner';
 
 import classNames from 'classnames/bind';
-import styles from './map.module.scss';
+import styles from './Game.module.scss';
 const cx = classNames.bind(styles);
 
 /* Render the contents of a Matter.js world to a canvas */
@@ -176,7 +176,7 @@ export default function Map({ allowBuilding, createRunner }) {
   return (
     <canvas
       ref={canvasRef}
-      className={cx('mapCanvas')}
+      className={cx('canvas')}
       width={BLOCKS_ACROSS * BLOCK_SIZE}
       height={BLOCKS_DOWN * BLOCK_SIZE}
       style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}
