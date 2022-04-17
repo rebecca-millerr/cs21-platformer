@@ -41,8 +41,7 @@ export default class Runner {
     else if (key === 'ArrowUp') this.upPressed = false;
   }
 
-  jump() {
-    // Jumping is not allowed if we're not standing on a platform
+  isStanding() {
     const runnerBounds = Matter.Bounds.create(this.body.vertices);
     const platformDetectionBounds = {
       min: { x: runnerBounds.min.x, y: runnerBounds.max.y },
@@ -51,26 +50,38 @@ export default class Runner {
     const bodies = Matter.Composite.allBodies(this.world);
     const bodiesStandingOn = Matter.Query.region(bodies, platformDetectionBounds)
       .filter((body) => ['ground', 'platform'].includes(body.label));
-    const isStandingOnPlatform = bodiesStandingOn.length > 0;
-    if (!isStandingOnPlatform) return;
-
-    Matter.Body.setVelocity(this.body, { x: this.body.velocity.x, y: -5 });
+    return bodiesStandingOn.length > 0;
   }
 
   // run every frame
   update() {
+    const movingLeft = this.leftPressed && !this.rightPressed;
+    const movingRight = this.rightPressed && !this.leftPressed;
+    const standing = this.isStanding();
+
+    // Player movement
+
     // Moving left / right
-    if (this.rightPressed && !this.leftPressed) {
-      Matter.Body.setVelocity(this.body, { x: 2, y: this.body.velocity.y });
-      this.sprite.setDirection(1);
-    }
-    if (this.leftPressed && !this.rightPressed) {
-      Matter.Body.setVelocity(this.body, { x: -2, y: this.body.velocity.y });
-      this.sprite.setDirection(-1);
-    }
+    if (movingLeft) Matter.Body.setVelocity(this.body, { x: -2, y: this.body.velocity.y });
+    if (movingRight) Matter.Body.setVelocity(this.body, { x: 2, y: this.body.velocity.y });
     // jumping
-    if (this.upPressed) {
-      this.jump();
+    if (this.upPressed && standing) {
+      Matter.Body.setVelocity(this.body, { x: this.body.velocity.x, y: -5 });
     }
+
+    // Update sprite
+    if (movingLeft) this.sprite.setDirection(-1);
+    if (movingRight) this.sprite.setDirection(1);
+
+    if (!standing) {
+      if (this.body.velocity.y < -0.1) this.sprite.setState('jump');
+      else if (this.body.velocity.y > 0.1) this.sprite.setState('fall');
+    } else if (movingLeft || movingRight) {
+      this.sprite.setState('run');
+    } else {
+      this.sprite.setState('idle');
+    }
+
+    this.sprite.tick();
   }
 }

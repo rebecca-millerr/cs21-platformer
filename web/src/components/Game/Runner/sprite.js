@@ -39,6 +39,7 @@ export default class RunnerSprite {
   }
 
   setState(state) {
+    if (this.state === state) return;
     this.state = state;
     this._counter = 0;
   }
