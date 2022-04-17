@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, DEFAULT_BLOCK as DEFAULT_BLOCK_COLOR, MOVING_SPEED } from './constants';
+import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
 
 import classNames from 'classnames/bind';
@@ -100,7 +100,7 @@ export default function Map({ allowBuilding }) {
       (BLOCKS_DOWN - 0.5) * BLOCK_SIZE,
       BLOCKS_ACROSS * BLOCK_SIZE,
       BLOCK_SIZE,
-      { isStatic: true, label: 'ground', render: { fillStyle: 'green' } },
+      { isStatic: true, label: 'ground', render: { fillStyle: COLORS.GROUND } },
     );
     Matter.Composite.add(world, ground);
 
@@ -108,7 +108,7 @@ export default function Map({ allowBuilding }) {
       world,
       Matter.Bodies.rectangle(
         BLOCK_SIZE * (BLOCKS_ACROSS - 2.5), BLOCK_SIZE * 1.5, BLOCK_SIZE, BLOCK_SIZE,
-        { render: { fillStyle: DEFAULT_BLOCK_COLOR } },
+        { render: { fillStyle: COLORS.DEFAULT_BLOCK } },
       ),
     );
     // Get canvas context
