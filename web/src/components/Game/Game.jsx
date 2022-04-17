@@ -2,43 +2,11 @@ import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
+import drawScene from './renderer';
 
 import classNames from 'classnames/bind';
 import styles from './Game.module.scss';
 const cx = classNames.bind(styles);
-
-/* Render the contents of a Matter.js world to a canvas */
-const drawScene = (context, bodies, offset) => {
-  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-  // Draw bodies
-  bodies.forEach((body) => {
-    context.beginPath();
-    body.vertices.forEach(({ x, y }) => context.lineTo(x - offset, y));
-    context.closePath();
-    context.fillStyle = body.render.fillStyle ?? '#000';
-    context.fill();
-  });
-
-  // Draw grid lines
-  // Latitude lines
-  context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-  for (let y = 0; y <= BLOCKS_DOWN; y += 1) {
-    context.beginPath();
-    context.moveTo(0, y * BLOCK_SIZE);
-    context.lineTo(BLOCKS_ACROSS * BLOCK_SIZE, y * BLOCK_SIZE);
-    context.stroke();
-  }
-  // Longitude lines
-  const firstLongitudeLine = Math.floor(offset / BLOCK_SIZE);
-  const lastLongitudeLine = firstLongitudeLine + BLOCKS_ACROSS + 1;
-  for (let x = firstLongitudeLine; x <= lastLongitudeLine; x += 1) {
-    context.beginPath();
-    context.moveTo(x * BLOCK_SIZE - offset, 0);
-    context.lineTo(x * BLOCK_SIZE - offset, BLOCKS_DOWN * BLOCK_SIZE);
-    context.stroke();
-  }
-};
 
 
 export default function Map() {
@@ -85,7 +53,7 @@ export default function Map() {
     // Get current state of physics simulation
     const bodies = Matter.Composite.allBodies(world);
     // Paint the picture
-    drawScene(canvasContextRef.current, bodies, xOffsetRef.current);
+    drawScene(canvasContextRef.current, xOffsetRef.current, bodies);
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
   }, [engine, world, viewportMoved]);
