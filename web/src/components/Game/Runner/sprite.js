@@ -31,6 +31,8 @@ export default class RunnerSprite {
     this.state = state;
     this._counter = 0;
     this.lastFrameTime = Date.now();
+    this.width = spriteWidth;
+    this.height = spriteHeight;
   }
 
   setState(state) {
