@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
+import mitt from 'mitt';
 import useRenderer from './renderer';
 
 import classNames from 'classnames/bind';
@@ -20,10 +21,11 @@ export default function Game({ children }) {
   const engine = useMemo(() => Matter.Engine.create(), []);
   const world = useMemo(() => engine.world, [engine]);
   const xOffsetRef = useRef(0);
+  const events = useMemo(() => mitt(), []);
 
   const gameContext = useMemo(
-    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef }),
-    [engine, world, canvasRef, canvasContextRef, xOffsetRef],
+    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef, events }),
+    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events],
   );
 
   /* Keeps the ground underfoot, and "garbage collects" blocks that have exited the left side of the
@@ -58,13 +60,15 @@ export default function Game({ children }) {
     // Move viewport
     xOffsetRef.current += delta * MOVING_SPEED;
     viewportMoved();
+    events.emit('beforeFrame', { delta });
     // Run physics simulation
     Matter.Engine.update(engine, delta * 1000);
     // Paint the picture
     renderer.draw(gameContext);
+    events.emit('afterFrame', { delta });
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
-  }, [renderer, gameContext, engine, viewportMoved]);
+  }, [gameContext, engine, renderer, events, viewportMoved]);
 
   // Initial setup
   useEffect(() => {
