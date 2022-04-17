@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
 import Game from 'components/Game';
+
 import useStore from 'store';
 import { useRouter } from 'next/router';
 
@@ -18,7 +19,7 @@ export default function GamePage() {
     <div>
       Player type is {playerType}
       <br />
-      <Game allowBuilding={playerType === 'builder'} createRunner={playerType === 'runner'} />
+      <Game />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useMemo, useCallback, useRef, useEffect } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect, createContext, useContext } from 'react';
+import PropTypes from 'prop-types';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
@@ -8,8 +9,11 @@ import classNames from 'classnames/bind';
 import styles from './Game.module.scss';
 const cx = classNames.bind(styles);
 
+export const GameContext = createContext();
+export const useGameContext = () => useContext(GameContext);
 
-export default function Map() {
+
+export default function Map({ children }) {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
@@ -95,12 +99,18 @@ export default function Map() {
   }, [world, animate]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={cx('canvas')}
-      width={BLOCKS_ACROSS * BLOCK_SIZE}
-      height={BLOCKS_DOWN * BLOCK_SIZE}
-      style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}
-    />
+    <GameContext.Provider value={{ engine, world, canvasRef, canvasContextRef, xOffsetRef }}>
+      <div className={cx('base')} style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}>
+        <canvas ref={canvasRef} className={cx('canvas')} />
+      </div>
+      {children}
+    </GameContext.Provider>
   );
 }
+
+Map.propTypes = {
+  children: PropTypes.node,
+};
+Map.defaultProps = {
+  children: null,
+};
