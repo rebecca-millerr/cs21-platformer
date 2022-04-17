@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { useGameContext } from '../Game';
 
@@ -22,7 +22,7 @@ function renderActiveRunner(gameContext) {
 
 /* Runner that is controlled by this player */
 export default function ActiveRunner() {
-  const { renderer, world } = useGameContext();
+  const { renderer, world, events } = useGameContext();
 
   // Create the active runner and add it to the world
   const spriteRef = useRef();
@@ -44,6 +44,65 @@ export default function ActiveRunner() {
 
   // Set up support for rendering the active player
   useEffect(() => renderer.addPass(renderActiveRunner), [renderer]);
+
+  // Set up input processing
+  const [leftPressed, setLeftPressed] = useState(false);
+  const [rightPressed, setRightPressed] = useState(false);
+  const [upPressed, setUpPressed] = useState(false);
+
+  const keyDownHandler = useCallback((event) => {
+    const { key } = event;
+    if (key === 'ArrowLeft') setLeftPressed(true);
+    else if (key === 'ArrowRight') setRightPressed(true);
+    else if (key === 'ArrowUp') setUpPressed(true);
+  }, []);
+  const keyUpHandler = useCallback((event) => {
+    const { key } = event;
+    if (key === 'ArrowLeft') setLeftPressed(false);
+    else if (key === 'ArrowRight') setRightPressed(false);
+    else if (key === 'ArrowUp') setUpPressed(false);
+  }, []);
+  useEffect(() => {
+    window.addEventListener('keydown', keyDownHandler);
+    window.addEventListener('keyup', keyUpHandler);
+    return () => {
+      window.removeEventListener('keydown', keyDownHandler);
+      window.removeEventListener('keyup', keyUpHandler);
+    };
+  }, [keyDownHandler, keyUpHandler]);
+
+  const keepGoingRight = useCallback(() => {
+    Matter.Body.setVelocity(bodyRef.current, { x: 2, y: bodyRef.current.velocity.y });
+  }, []);
+  const keepGoingLeft = useCallback(() => {
+    Matter.Body.setVelocity(bodyRef.current, { x: -2, y: bodyRef.current.velocity.y });
+  }, []);
+
+  // Left/right movement
+  useEffect(() => {
+    if (rightPressed && !leftPressed) {
+      events.off('beforeFrame', keepGoingLeft);
+      events.on('beforeFrame', keepGoingRight);
+    } else if (leftPressed && !rightPressed) {
+      events.off('beforeFrame', keepGoingRight);
+      events.on('beforeFrame', keepGoingLeft);
+    } else {
+      events.off('beforeFrame', keepGoingRight);
+      events.off('beforeFrame', keepGoingLeft);
+    }
+    return () => {
+      events.off('beforeFrame', keepGoingRight);
+      events.off('beforeFrame', keepGoingLeft);
+    };
+  }, [rightPressed, leftPressed, keepGoingRight, keepGoingLeft, events]);
+
+  // Jumping
+  useEffect(() => {
+    const { x: currentXVelocity } = bodyRef.current.velocity;
+    if (upPressed) {
+      Matter.Body.setVelocity(bodyRef.current, { x: currentXVelocity, y: -5 });
+    }
+  }, [upPressed]);
 
   return null;
 }
