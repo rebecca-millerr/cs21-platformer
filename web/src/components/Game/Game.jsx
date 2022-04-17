@@ -13,7 +13,7 @@ export const GameContext = createContext();
 export const useGameContext = () => useContext(GameContext);
 
 
-export default function Map({ children }) {
+export default function Game({ children }) {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
@@ -108,9 +108,9 @@ export default function Map({ children }) {
   );
 }
 
-Map.propTypes = {
+Game.propTypes = {
   children: PropTypes.node,
 };
-Map.defaultProps = {
+Game.defaultProps = {
   children: null,
 };
