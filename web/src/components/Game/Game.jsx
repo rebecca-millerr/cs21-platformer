@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
@@ -42,7 +41,7 @@ const drawScene = (context, bodies, offset) => {
 };
 
 
-export default function Map({ allowBuilding }) {
+export default function Map() {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
@@ -50,8 +49,8 @@ export default function Map({ allowBuilding }) {
   const world = useMemo(() => engine.world, [engine]);
   const xOffsetRef = useRef(0);
 
-  /* Maintenance surrounding moving the viewport: keeps the ground underfoot, and "garbage collects"
-     blocks that have exited the left side of the screen */
+  /* Keeps the ground underfoot, and "garbage collects" blocks that have exited the left side of the
+     screen */
   const viewportMoved = useCallback(() => {
     Matter.Composite.allBodies(world).forEach((body) => {
       const { vertices } = body;
@@ -91,7 +90,7 @@ export default function Map({ allowBuilding }) {
     requestRef.current = requestAnimationFrame(animate);
   }, [engine, world, viewportMoved]);
 
-  // Initial setup\
+  // Initial setup
   useEffect(() => {
     // Create the ground
     const ground = Matter.Bodies.rectangle(
@@ -127,31 +126,6 @@ export default function Map({ allowBuilding }) {
     };
   }, [world, animate]);
 
-  // Builders can place blocks
-  const createBlock = (event) => {
-    // Enforce that the user is allowed to build
-    if (!allowBuilding) return;
-    // Find out where in the world they clicked
-    const { top, left } = canvasRef.current.getBoundingClientRect();
-    const x = event.clientX - left + xOffsetRef.current;
-    const y = event.clientY - top;
-    // Create a block for that space
-    const row = Math.floor(y / BLOCK_SIZE);
-    const col = Math.floor(x / BLOCK_SIZE);
-    const newBlock = Matter.Bodies.rectangle(
-      (col + 0.5) * BLOCK_SIZE,
-      (row + 0.5) * BLOCK_SIZE,
-      BLOCK_SIZE,
-      BLOCK_SIZE,
-      { isStatic: true, render: { fillStyle: '#c934eb' } },
-    );
-    // Check that it doesn't overlap anything in the world (runners, the ground, other blocks)
-    const collisions = Matter.Query.collides(newBlock, Matter.Composite.allBodies(world));
-    if (collisions.length > 0) return;
-    // If it doesn't, add it to the world
-    Matter.Composite.add(world, newBlock);
-  };
-
   return (
     <canvas
       ref={canvasRef}
@@ -159,14 +133,6 @@ export default function Map({ allowBuilding }) {
       width={BLOCKS_ACROSS * BLOCK_SIZE}
       height={BLOCKS_DOWN * BLOCK_SIZE}
       style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}
-      onMouseDown={createBlock}
     />
   );
 }
-
-Map.propTypes = {
-  allowBuilding: PropTypes.bool,
-};
-Map.defaultProps = {
-  allowBuilding: false,
-};
