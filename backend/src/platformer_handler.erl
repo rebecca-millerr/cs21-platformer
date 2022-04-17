@@ -7,7 +7,9 @@
 -export([websocket_info/2]).
 
 
+
 init(Req, State) ->
+    io:format("~w~n", [Req]),
 	{cowboy_websocket, Req, State}.
 
 websocket_init(State) ->
@@ -56,4 +58,5 @@ websocket_handle(_Frame, State) ->
 	{ok, State}.
 
 websocket_info(_Info, State) ->
+    io:format("~w~n", [_Info]),
 	{ok, State}.
