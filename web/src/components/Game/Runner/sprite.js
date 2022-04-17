@@ -1,5 +1,3 @@
-import Matter from 'matter-js';
-
 // Load sprite
 
 const spriteSheet = typeof window !== 'undefined' ? new Image() : null;
@@ -28,17 +26,11 @@ export function getCoordinates(spriteNumber) {
 }
 
 
-export class Runner {
-  constructor(state = 'idle', position = { x: 400, y: 100 }) {
+export default class RunnerSprite {
+  constructor(state = 'idle') {
     this.state = state;
     this._counter = 0;
     this.lastFrameTime = Date.now();
-    this.body = Matter.Bodies.rectangle(
-      position.x, position.y,
-      spriteWidth - 25, // sprite image is too wide for hitbox
-      spriteHeight,
-      { label: 'runner', render: { runner: this, fillStyle: 'rgba(0, 0, 0, 0.2)' } },
-    );
   }
 
   setState(state) {
