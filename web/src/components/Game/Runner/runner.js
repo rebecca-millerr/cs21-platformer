@@ -8,7 +8,7 @@ export default class Runner {
     this.world = world;
     this.sprite = new RunnerSprite();
     this.body = Matter.Bodies.rectangle(
-      400, 100, this.sprite.width - 25, this.sprite.height,
+      400, 100, this.sprite.width - 35, this.sprite.height,
       {
         label: 'active-runner',
         render: { sprite: this.sprite },
