@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
-import drawScene from './renderer';
+import useRenderer from './renderer';
 
 import classNames from 'classnames/bind';
 import styles from './Game.module.scss';
@@ -20,6 +20,11 @@ export default function Game({ children }) {
   const engine = useMemo(() => Matter.Engine.create(), []);
   const world = useMemo(() => engine.world, [engine]);
   const xOffsetRef = useRef(0);
+
+  const gameContext = useMemo(
+    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef }),
+    [engine, world, canvasRef, canvasContextRef, xOffsetRef],
+  );
 
   /* Keeps the ground underfoot, and "garbage collects" blocks that have exited the left side of the
      screen */
@@ -43,6 +48,7 @@ export default function Game({ children }) {
   // Render loop
   const requestRef = useRef();
   const previousTimeRef = useRef();
+  const renderer = useRenderer();
   const animate = useCallback((time) => {
     // Timekeeping
     const delta = (time && previousTimeRef.current)
@@ -54,13 +60,11 @@ export default function Game({ children }) {
     viewportMoved();
     // Run physics simulation
     Matter.Engine.update(engine, delta * 1000);
-    // Get current state of physics simulation
-    const bodies = Matter.Composite.allBodies(world);
     // Paint the picture
-    drawScene(canvasContextRef.current, xOffsetRef.current, bodies);
+    renderer.draw(gameContext);
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
-  }, [engine, world, viewportMoved]);
+  }, [renderer, gameContext, engine, viewportMoved]);
 
   // Initial setup
   useEffect(() => {
@@ -79,7 +83,7 @@ export default function Game({ children }) {
       world,
       Matter.Bodies.rectangle(
         BLOCK_SIZE * (BLOCKS_ACROSS - 2.5), BLOCK_SIZE * 1.5, BLOCK_SIZE, BLOCK_SIZE,
-        { render: { fillStyle: COLORS.DEFAULT_BLOCK } },
+        { label: 'platform', render: { fillStyle: COLORS.DEFAULT_BLOCK } },
       ),
     );
     // Set up canvas / context
@@ -99,7 +103,9 @@ export default function Game({ children }) {
   }, [world, animate]);
 
   return (
-    <GameContext.Provider value={{ engine, world, canvasRef, canvasContextRef, xOffsetRef }}>
+    <GameContext.Provider
+      value={useMemo(() => ({ ...gameContext, renderer }), [gameContext, renderer])}
+    >
       <div className={cx('base')} style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}>
         <canvas ref={canvasRef} className={cx('canvas')} />
       </div>
