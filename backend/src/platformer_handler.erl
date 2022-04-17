@@ -9,10 +9,10 @@
 
 
 init(Req, State) ->
-    io:format("~w~n", [Req]),
-	{cowboy_websocket, Req, State}.
+	{cowboy_websocket, Req, State, #{idle_timeout => 300000}}.
 
 websocket_init(State) ->
+    broadcaster ! {subscribe, self()},
 	{ok, State}.
 
 % For handling casts based on decoded JSON data. 
@@ -57,6 +57,5 @@ websocket_handle({binary, Data}, State) ->
 websocket_handle(_Frame, State) ->
 	{ok, State}.
 
-websocket_info(_Info, State) ->
-    io:format("~w~n", [_Info]),
-	{ok, State}.
+websocket_info(Info, State) ->
+	{reply, {text, Info}, State}.
