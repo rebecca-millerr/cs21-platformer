@@ -1,6 +1,8 @@
 .DS_Store
 
-backend/deps/
-backend/_rel/
-backend/ebin/
+backend/deps
+backend/_rel
+backend/ebin
+backend/.erlang.mk
 *.beam
+*.log
