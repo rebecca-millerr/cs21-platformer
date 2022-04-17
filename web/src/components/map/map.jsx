@@ -111,8 +111,12 @@ export default function Map({ allowBuilding }) {
         { render: { fillStyle: COLORS.DEFAULT_BLOCK } },
       ),
     );
-    // Get canvas context
+    // Set up canvas / context
+    const dpr = window.devicePixelRatio || 1;
+    canvasRef.current.width = BLOCKS_ACROSS * BLOCK_SIZE * dpr;
+    canvasRef.current.height = BLOCKS_DOWN * BLOCK_SIZE * dpr;
     canvasContextRef.current = canvasRef.current.getContext('2d');
+    canvasContextRef.current.setTransform(dpr, 0, 0, dpr, 0, 0);
     // Start the render loop
     requestRef.current = requestAnimationFrame(animate);
     // Clean up
@@ -152,6 +156,7 @@ export default function Map({ allowBuilding }) {
       className={cx('mapCanvas')}
       width={BLOCKS_ACROSS * BLOCK_SIZE}
       height={BLOCKS_DOWN * BLOCK_SIZE}
+      style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}
       onMouseDown={createBlock}
     />
   );
