@@ -6,19 +6,25 @@ import Matter from 'matter-js';
 import RunnerSprite from './sprite';
 
 function renderActiveRunner(gameContext) {
+  const canvasContext = gameContext.canvasContextRef.current;
+  const xOffset = gameContext.xOffsetRef.current;
+
   Matter.Composite.allBodies(gameContext.world).forEach((body) => {
     if (body.label !== 'active-runner') return;
 
+    // Draw sprite
     const { x, y } = body.position;
     const { sprite } = body.render;
-    if (body.velocity.x < -0.25) sprite.setDirection(-1);
-    else if (body.velocity.x > 0.25) sprite.setDirection(1);
     const renderedRunner = sprite.getCanvas();
     const { width, height } = renderedRunner;
-    const xOffset = gameContext.xOffsetRef.current;
-    const canvasContext = gameContext.canvasContextRef.current;
     canvasContext.drawImage(renderedRunner, x - (width / 2) - xOffset, y - (height / 2));
     sprite.tick();
+    // Debug: draw vertices of underlying body
+    canvasContext.beginPath();
+    body.vertices.forEach((vert) => canvasContext.lineTo(vert.x - xOffset, vert.y));
+    canvasContext.closePath();
+    canvasContext.strokeStyle = '#000';
+    canvasContext.stroke();
   });
 }
 
@@ -38,6 +44,7 @@ export default function ActiveRunner() {
         render: { sprite: spriteRef.current },
       },
     );
+    Matter.Body.setInertia(bodyRef.current, Infinity);
     Matter.Composite.add(world, bodyRef.current);
     return () => {
       Matter.Composite.remove(world, bodyRef.current);
@@ -85,9 +92,11 @@ export default function ActiveRunner() {
     if (rightPressed && !leftPressed) {
       events.off('beforeFrame', keepGoingLeft);
       events.on('beforeFrame', keepGoingRight);
+      spriteRef.current.setDirection(1);
     } else if (leftPressed && !rightPressed) {
       events.off('beforeFrame', keepGoingRight);
       events.on('beforeFrame', keepGoingLeft);
+      spriteRef.current.setDirection(-1);
     } else {
       events.off('beforeFrame', keepGoingRight);
       events.off('beforeFrame', keepGoingLeft);
