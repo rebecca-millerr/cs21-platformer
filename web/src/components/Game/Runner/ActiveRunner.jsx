@@ -54,11 +54,11 @@ export default function ActiveRunner() {
   // Set up support for rendering the active player
   useEffect(() => renderer.addPass(renderActiveRunner), [renderer]);
 
-  // Set up input processing
+
+  // Keyboard input processing
   const [leftPressed, setLeftPressed] = useState(false);
   const [rightPressed, setRightPressed] = useState(false);
   const [upPressed, setUpPressed] = useState(false);
-
   const keyDownHandler = useCallback((event) => {
     const { key } = event;
     if (key.startsWith('Arrow')) event.preventDefault();
@@ -81,14 +81,13 @@ export default function ActiveRunner() {
     };
   }, [keyDownHandler, keyUpHandler]);
 
+  // Left/right movement
   const keepGoingRight = useCallback(() => {
     Matter.Body.setVelocity(bodyRef.current, { x: 2, y: bodyRef.current.velocity.y });
   }, []);
   const keepGoingLeft = useCallback(() => {
     Matter.Body.setVelocity(bodyRef.current, { x: -2, y: bodyRef.current.velocity.y });
   }, []);
-
-  // Left/right movement
   useEffect(() => {
     if (rightPressed && !leftPressed) {
       events.off('beforeFrame', keepGoingLeft);
@@ -111,10 +110,23 @@ export default function ActiveRunner() {
   // Jumping
   useEffect(() => {
     const { x: currentXVelocity } = bodyRef.current.velocity;
+
     if (upPressed) {
-      Matter.Body.setVelocity(bodyRef.current, { x: currentXVelocity, y: -5 });
+      // Check that the player is standing on a platform
+      const runnerBounds = Matter.Bounds.create(bodyRef.current.vertices);
+      const platformDetectionBounds = {
+        min: { x: runnerBounds.min.x, y: runnerBounds.max.y },
+        max: { x: runnerBounds.max.x, y: runnerBounds.max.y + 1 },
+      };
+      const bodies = Matter.Composite.allBodies(world);
+      const standingOn = Matter.Query.region(bodies, platformDetectionBounds)
+        .filter((body) => ['ground', 'platform'].includes(body.label));
+      // Jumping is allowed if we're standing on a platform
+      if (standingOn.length > 0) {
+        Matter.Body.setVelocity(bodyRef.current, { x: currentXVelocity, y: -5 });
+      }
     }
-  }, [upPressed]);
+  }, [upPressed, bodyRef, world]);
 
   return null;
 }
