@@ -1,3 +1,5 @@
+/* Graphical representation of a runner */
+
 // Load sprite
 
 const spriteSheet = typeof window !== 'undefined' ? new Image() : null;

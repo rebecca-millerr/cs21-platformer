@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 
 import { useGameContext } from '../Game';
 
 import Matter from 'matter-js';
-import RunnerSprite from './sprite';
+import Runner from './runner';
 
 function renderActiveRunner(gameContext) {
   const canvasContext = gameContext.canvasContextRef.current;
@@ -33,100 +33,33 @@ export default function ActiveRunner() {
   const { renderer, world, events } = useGameContext();
 
   // Create the active runner and add it to the world
-  const spriteRef = useRef();
-  const bodyRef = useRef();
+  const runnerRef = useRef();
   useEffect(() => {
-    spriteRef.current = new RunnerSprite();
-    bodyRef.current = Matter.Bodies.rectangle(
-      400, 100, spriteRef.current.width - 25, spriteRef.current.height,
-      {
-        label: 'active-runner',
-        render: { sprite: spriteRef.current },
-      },
-    );
-    Matter.Body.setInertia(bodyRef.current, Infinity);
-    Matter.Composite.add(world, bodyRef.current);
-    return () => {
-      Matter.Composite.remove(world, bodyRef.current);
-    };
+    runnerRef.current = new Runner(world);
+    return () => runnerRef.current.remove();
   }, [world]);
 
   // Set up support for rendering the active player
   useEffect(() => renderer.addPass(renderActiveRunner), [renderer]);
 
-
-  // Keyboard input processing
-  const [leftPressed, setLeftPressed] = useState(false);
-  const [rightPressed, setRightPressed] = useState(false);
-  const [upPressed, setUpPressed] = useState(false);
-  const keyDownHandler = useCallback((event) => {
-    const { key } = event;
-    if (key.startsWith('Arrow')) event.preventDefault();
-    if (key === 'ArrowLeft') setLeftPressed(true);
-    else if (key === 'ArrowRight') setRightPressed(true);
-    else if (key === 'ArrowUp') setUpPressed(true);
-  }, []);
-  const keyUpHandler = useCallback((event) => {
-    const { key } = event;
-    if (key === 'ArrowLeft') setLeftPressed(false);
-    else if (key === 'ArrowRight') setRightPressed(false);
-    else if (key === 'ArrowUp') setUpPressed(false);
-  }, []);
+  // Set up key event handling
   useEffect(() => {
-    window.addEventListener('keydown', keyDownHandler);
-    window.addEventListener('keyup', keyUpHandler);
+    const onKeyDown = (e) => runnerRef.current.onKeyDown(e);
+    const onKeyUp = (e) => runnerRef.current.onKeyUp(e);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
     return () => {
-      window.removeEventListener('keydown', keyDownHandler);
-      window.removeEventListener('keyup', keyUpHandler);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
     };
-  }, [keyDownHandler, keyUpHandler]);
+  });
 
-  // Left/right movement
-  const keepGoingRight = useCallback(() => {
-    Matter.Body.setVelocity(bodyRef.current, { x: 2, y: bodyRef.current.velocity.y });
-  }, []);
-  const keepGoingLeft = useCallback(() => {
-    Matter.Body.setVelocity(bodyRef.current, { x: -2, y: bodyRef.current.velocity.y });
-  }, []);
+  // Let runner perform necessary updates to itself on every frame
   useEffect(() => {
-    if (rightPressed && !leftPressed) {
-      events.off('beforeFrame', keepGoingLeft);
-      events.on('beforeFrame', keepGoingRight);
-      spriteRef.current.setDirection(1);
-    } else if (leftPressed && !rightPressed) {
-      events.off('beforeFrame', keepGoingRight);
-      events.on('beforeFrame', keepGoingLeft);
-      spriteRef.current.setDirection(-1);
-    } else {
-      events.off('beforeFrame', keepGoingRight);
-      events.off('beforeFrame', keepGoingLeft);
-    }
-    return () => {
-      events.off('beforeFrame', keepGoingRight);
-      events.off('beforeFrame', keepGoingLeft);
-    };
-  }, [rightPressed, leftPressed, keepGoingRight, keepGoingLeft, events]);
-
-  // Jumping
-  useEffect(() => {
-    const { x: currentXVelocity } = bodyRef.current.velocity;
-
-    if (upPressed) {
-      // Check that the player is standing on a platform
-      const runnerBounds = Matter.Bounds.create(bodyRef.current.vertices);
-      const platformDetectionBounds = {
-        min: { x: runnerBounds.min.x, y: runnerBounds.max.y },
-        max: { x: runnerBounds.max.x, y: runnerBounds.max.y + 1 },
-      };
-      const bodies = Matter.Composite.allBodies(world);
-      const standingOn = Matter.Query.region(bodies, platformDetectionBounds)
-        .filter((body) => ['ground', 'platform'].includes(body.label));
-      // Jumping is allowed if we're standing on a platform
-      if (standingOn.length > 0) {
-        Matter.Body.setVelocity(bodyRef.current, { x: currentXVelocity, y: -5 });
-      }
-    }
-  }, [upPressed, bodyRef, world]);
+    const update = () => runnerRef.current.update();
+    events.on('beforeFrame', update);
+    return () => events.off('beforeFrame', update);
+  }, [events, runnerRef]);
 
   return null;
 }
