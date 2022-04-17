@@ -18,7 +18,7 @@ export default function Game() {
     <div>
       Player type is {playerType}
       <br />
-      <Map allowBuilding={playerType === 'builder'} />
+      <Map allowBuilding={playerType === 'builder'} createRunner={playerType === 'runner'} />
     </div>
   );
 }

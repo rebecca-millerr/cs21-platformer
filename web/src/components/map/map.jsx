@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
+import { Runner } from './runner';
 
 import classNames from 'classnames/bind';
 import styles from './map.module.scss';
@@ -14,6 +15,8 @@ const drawScene = (context, bodies, offset) => {
 
   // Draw bodies
   bodies.forEach((body) => {
+    // if (body.label === 'runner') return;
+
     context.beginPath();
     body.vertices.forEach(({ x, y }) => context.lineTo(x - offset, y));
     context.closePath();
@@ -39,15 +42,26 @@ const drawScene = (context, bodies, offset) => {
     context.lineTo(x * BLOCK_SIZE - offset, BLOCKS_DOWN * BLOCK_SIZE);
     context.stroke();
   }
+
+  // Draw runners
+  bodies.filter((body) => body.label === 'runner').forEach((body) => {
+    const { x, y } = body.position;
+    const { runner } = body.render;
+    const renderedRunner = runner.getCanvas();
+    const { width, height } = renderedRunner;
+    context.drawImage(renderedRunner, x - offset - (width / 2), y - (height / 2));
+    runner.tick();
+  });
 };
 
 
-export default function Map({ allowBuilding }) {
+export default function Map({ allowBuilding, createRunner }) {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
   const engine = useMemo(() => Matter.Engine.create(), []);
   const world = useMemo(() => engine.world, [engine]);
+  const runnerRef = useRef();
   const xOffsetRef = useRef(0);
 
   /* Maintenance surrounding moving the viewport: keeps the ground underfoot, and "garbage collects"
@@ -117,6 +131,7 @@ export default function Map({ allowBuilding }) {
     canvasRef.current.height = BLOCKS_DOWN * BLOCK_SIZE * dpr;
     canvasContextRef.current = canvasRef.current.getContext('2d');
     canvasContextRef.current.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvasContextRef.current.imageSmoothingEnabled = false;
     // Start the render loop
     requestRef.current = requestAnimationFrame(animate);
     // Clean up
@@ -126,6 +141,7 @@ export default function Map({ allowBuilding }) {
     };
   }, [world, animate]);
 
+  // Builders can place blocks
   const createBlock = (event) => {
     // Enforce that the user is allowed to build
     if (!allowBuilding) return;
@@ -143,12 +159,19 @@ export default function Map({ allowBuilding }) {
       BLOCK_SIZE,
       { isStatic: true, render: { fillStyle: '#c934eb' } },
     );
-    // Check that it doesn't overlap anything in the world (players, the ground, other blocks)
+    // Check that it doesn't overlap anything in the world (runners, the ground, other blocks)
     const collisions = Matter.Query.collides(newBlock, Matter.Composite.allBodies(world));
     if (collisions.length > 0) return;
     // If it doesn't, add it to the world
     Matter.Composite.add(world, newBlock);
   };
+
+  // Runners get characters
+  useEffect(() => {
+    if (!createRunner) return;
+    runnerRef.current = new Runner();
+    Matter.Composite.add(world, runnerRef.current.body);
+  }, [world, createRunner]);
 
   return (
     <canvas
@@ -164,7 +187,9 @@ export default function Map({ allowBuilding }) {
 
 Map.propTypes = {
   allowBuilding: PropTypes.bool,
+  createRunner: PropTypes.bool,
 };
 Map.defaultProps = {
   allowBuilding: false,
+  createRunner: false,
 };
