@@ -61,6 +61,7 @@ export default function ActiveRunner() {
 
   const keyDownHandler = useCallback((event) => {
     const { key } = event;
+    if (key.startsWith('Arrow')) event.preventDefault();
     if (key === 'ArrowLeft') setLeftPressed(true);
     else if (key === 'ArrowRight') setRightPressed(true);
     else if (key === 'ArrowUp') setUpPressed(true);
