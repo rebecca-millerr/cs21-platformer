@@ -6,6 +6,8 @@
    <script language = "javascript" type = "text/javascript">
       var wsUri = "ws://localhost:8080/";
       var output;
+
+      var starttime = new Date();
 		
       function init() {
          output = document.getElementById("output");
@@ -26,6 +28,10 @@
          websocket.onerror = function(evt) {
             onError(evt)
          };
+
+         websocket.onclose = function(evt) {
+            onClose(evt)
+         };
       }
 		
       function onOpen(evt) {
@@ -41,6 +47,13 @@
 
       function onError(evt) {
          writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+      }
+
+      function onClose(evt) {
+         writeToScreen('<span style="color: red;">Closed websocket:</span> ' + evt.data);
+         console.log(evt);
+         let elapsed = new Date() - starttime;
+         console.log(elapsed);
       }
 		
       function doSend(message) {

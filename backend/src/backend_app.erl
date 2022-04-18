@@ -5,6 +5,9 @@
 -export([stop/1]).
 
 start(_Type, _Args) ->
+    Broadcaster = spawn(broadcaster, start, []),
+    register(broadcaster, Broadcaster),
+
     Dispatch = cowboy_router:compile([
         {'_', [{"/", platformer_handler, []}]}
     ]),
@@ -12,6 +15,7 @@ start(_Type, _Args) ->
         [{port, 8080}],
         #{env => #{dispatch => Dispatch}}
     ),
+
 	backend_sup:start_link().
 
 stop(_State) ->
