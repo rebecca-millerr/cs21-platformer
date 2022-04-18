@@ -37,6 +37,14 @@ json_call(Json, State) ->
 
 
 % State is [] on app startup
+% Expects requests: 
+%   - in JSON format. Easiest way is just to use JSON.stringify() in 
+%     the websocket.send() call, as in websocket.send(JSON.stringify(obj))
+%   - That "call" vs "cast" is specified, by the presence of one or the
+%     other of those as a key. The value doesn't matter. e.g. 
+%     { call: 1 } to send a call or { cast: 1 } to send a cast.
+%   - Current plan is for there to also be a "type" field but I haven't
+%     fleshed that out yet. e.g. something like {cast: 1, type: place_block}.
 websocket_handle({text, Data}, State) ->
     case (jsx:is_json(Data)) of
         true ->  Map = jsx:decode(Data),
