@@ -8,6 +8,9 @@ start(_Type, _Args) ->
     Broadcaster = spawn(broadcaster, start, []),
     register(broadcaster, Broadcaster),
 
+    TickCounter = spawn(tick_counter, start, []),
+    register(tick_counter, TickCounter),
+
     Dispatch = cowboy_router:compile([
         {'_', [{"/", platformer_handler, []}]}
     ]),
