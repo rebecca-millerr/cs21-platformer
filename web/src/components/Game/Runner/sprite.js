@@ -29,13 +29,19 @@ export function getCoordinates(spriteNumber) {
 
 
 export default class RunnerSprite {
-  constructor(state = 'idle') {
+  constructor(size = spriteHeight, state = 'idle') {
     this.state = state;
     this._counter = 0;
     this.lastFrameTime = Date.now();
-    this.width = spriteWidth;
-    this.height = spriteHeight;
+
     this.direction = 1;
+
+    this._canvas = document.createElement('canvas');
+    this._canvas.width = Math.ceil((size / spriteHeight) * spriteWidth);
+    this._canvas.height = size;
+
+    this.width = this._canvas.width;
+    this.height = this._canvas.height;
   }
 
   setState(state) {
@@ -73,22 +79,20 @@ export default class RunnerSprite {
     this.direction = direction;
   }
 
-  getCanvas(setDirection = null) {
-    if (setDirection) this.direction = setDirection;
-
+  getCanvas() {
     const { x, y, width, height } = this.getSpriteCoordinates();
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
+    const ctx = this._canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.width, this.height);
     ctx.imageSmoothingEnabled = false;
-    if (this.direction === -1) ctx.translate(width, 0);
+    ctx.save();
+    if (this.direction === -1) ctx.translate(this.width, 0);
     ctx.scale(this.direction, 1);
     ctx.drawImage(
       spriteSheet,
       x, y, width, height, // positions on sprite sheet
-      0, 0, width, height, // positions on canvas
+      0, 0, this.width, this.height, // positions on canvas
     );
-    return canvas;
+    ctx.restore();
+    return this._canvas;
   }
 }
