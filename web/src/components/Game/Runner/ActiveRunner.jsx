@@ -3,7 +3,7 @@ import { useRef, useEffect } from 'react';
 import { useGameContext } from '../Game';
 
 import Matter from 'matter-js';
-import Runner from './runner';
+import Runner from './controlled-runner';
 
 function renderActiveRunner(gameContext) {
   const canvasContext = gameContext.canvasContextRef.current;

@@ -1,4 +1,4 @@
-/* Physical body that models a runner */
+/* Physical body that models a runner and can respond to keyboard events */
 
 import Matter from 'matter-js';
 import RunnerSprite from './sprite';
