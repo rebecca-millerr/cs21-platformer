@@ -20,10 +20,14 @@ websocket_init(State) ->
 % TODO: Replace with console logging and never send a response
 json_cast(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
+        (<<"place">>) ->
+                  canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
+                  canvas_state ! {broadcast},
+                  {ok, State};
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
         Type      -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
-                  io:format("~w~n", [Type]),
+                  io:format("~w~n~w~n", [Type, Json]),
                   {reply, {text, Res}, State}
     end.
 
