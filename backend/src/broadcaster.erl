@@ -30,7 +30,7 @@ server_loop(State) ->
             io:format("process ~w ended for reason ~w~n", [Pid, Reason]),
             server_loop(remove_subscriber(Pid, State));
         {report, Pid} -> 
-            Pid ! State,
+            Pid ! {subscribers, State},
             server_loop(State);
         {quit} -> ok;
         _ -> server_loop(State)

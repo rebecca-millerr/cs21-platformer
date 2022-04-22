@@ -8,8 +8,8 @@ server_loop(State) ->
         % blocks should be a JSON compatible map
         {place, Block} ->
             server_loop([ Block | State ]);
-        {report, Pid} -> Pid ! State, server_loop(State);
-        {broadcast} -> broadcaster ! {json, State}, server_loop(State);
+        {report, Pid} -> Pid ! {blocks, State}, server_loop(State);
+        {broadcast} -> broadcaster ! {json, #{blocks => State}}, server_loop(State);
         _ -> server_loop(State)
     end.
 
