@@ -3,6 +3,7 @@
 // Load sprite
 
 const spriteSheet = typeof window !== 'undefined' ? new Image() : null;
+// TODO: render something with playerColor
 if (spriteSheet) spriteSheet.src = './assets/sprites/character.png';
 
 // How big is each sprite
@@ -20,13 +21,11 @@ export const sequences = {
   fall: { seq: [22, 23], loop: true, pace: 5 },
 };
 
-
 export function getCoordinates(spriteNumber) {
   const x = (spriteNumber % sheetWidth) * spriteWidth;
   const y = Math.floor(spriteNumber / sheetWidth) * spriteHeight;
   return { x, y, width: spriteWidth, height: spriteHeight };
 }
-
 
 export default class RunnerSprite {
   constructor(size = spriteHeight, state = 'idle') {
@@ -57,7 +56,10 @@ export default class RunnerSprite {
     if (sequences[this.state].loop) {
       this._counter %= sequences[this.state].seq.length;
     } else {
-      this._counter = Math.min(this._counter, sequences[this.state].seq.length - 1);
+      this._counter = Math.min(
+        this._counter,
+        sequences[this.state].seq.length - 1
+      );
     }
   }
 
@@ -89,8 +91,14 @@ export default class RunnerSprite {
     ctx.scale(this.direction, 1);
     ctx.drawImage(
       spriteSheet,
-      x, y, width, height, // positions on sprite sheet
-      0, 0, this.width, this.height, // positions on canvas
+      x,
+      y,
+      width,
+      height, // positions on sprite sheet
+      0,
+      0,
+      this.width,
+      this.height // positions on canvas
     );
     ctx.restore();
     return this._canvas;
