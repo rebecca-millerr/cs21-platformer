@@ -13,10 +13,16 @@ init(Req, State) ->
 
 websocket_init(State) ->
     broadcaster ! {subscribe, self()},
+    tick_counter ! {report, self()},
     canvas_state ! {report, self()},
     receive
-        {blocks, Blocks} ->
-            {reply, {text, jsx:encode(#{<<"blocks">> => Blocks})}, State}
+        {ticks, Ticks} -> 
+        receive
+            {blocks, Blocks} ->
+                {reply, {text, jsx:encode(
+                    #{<<"ticks">> => Ticks,<<"blocks">> => Blocks})},
+                State}
+        end
     end.
 	
 
@@ -26,14 +32,18 @@ websocket_init(State) ->
 json_cast(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
         (<<"place">>) ->
-                  canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
-                  broadcaster  !
-                    {json, #{<<"newblock">> => maps:get(<<"block">>, Json, #{})}},
-                  % canvas_state ! {broadcast},
-                  {ok, State};
+            canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
+            tick_counter ! {report, self()},
+                receive
+                    {ticks, Ticks} ->
+                        broadcaster  ! {json,
+                            #{<<"ticks">> => Ticks,
+                              <<"newblock">> => maps:get(<<"block">>, Json, #{})}}
+                end,
+                {ok, State};
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
-        Type      -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
+        Type   -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
                   io:format("~w~n~w~n", [Type, Json]),
                   {reply, {text, Res}, State}
     end.
