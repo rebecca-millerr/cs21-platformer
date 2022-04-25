@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useRef, useEffect, createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS, MOVING_SPEED } from './constants';
+import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, MOVING_SPEED } from './constants';
 import Matter from 'matter-js';
 import mitt from 'mitt';
 import useRenderer from './renderer';
