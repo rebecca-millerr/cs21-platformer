@@ -13,7 +13,12 @@ init(Req, State) ->
 
 websocket_init(State) ->
     broadcaster ! {subscribe, self()},
-	{ok, State}.
+    canvas_state ! {report, self()},
+    receive
+        {blocks, Blocks} ->
+            {reply, {text, jsx:encode(#{<<"blocks">> => Blocks})}, State}
+    end.
+	
 
 % For handling casts based on decoded JSON data. 
 % Sends a response only in the case of an invalid cast.
@@ -22,7 +27,9 @@ json_cast(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
         (<<"place">>) ->
                   canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
-                  canvas_state ! {broadcast},
+                  broadcaster  !
+                    {json, #{<<"newblock">> => maps:get(<<"block">>, Json, #{})}},
+                  % canvas_state ! {broadcast},
                   {ok, State};
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
