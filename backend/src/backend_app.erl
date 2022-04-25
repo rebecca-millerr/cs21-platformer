@@ -8,6 +8,12 @@ start(_Type, _Args) ->
     Broadcaster = spawn(broadcaster, start, []),
     register(broadcaster, Broadcaster),
 
+    TickCounter = spawn(tick_counter, start, []),
+    register(tick_counter, TickCounter),
+
+    CanvasState = spawn(canvas_state, start, []),
+    register(canvas_state, CanvasState),
+
     Dispatch = cowboy_router:compile([
         {'_', [{"/", platformer_handler, []}]}
     ]),

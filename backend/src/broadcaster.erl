@@ -23,11 +23,14 @@ server_loop(State) ->
         {message, Message} ->
             broadcast_message(Message, State),
             server_loop(State);
+        {json, Message} -> 
+            broadcast_message(jsx:encode(Message), State),
+            server_loop(State);
         {'DOWN', _Ref, process, Pid, Reason} ->
             io:format("process ~w ended for reason ~w~n", [Pid, Reason]),
             server_loop(remove_subscriber(Pid, State));
-        {reportstate, Pid} -> 
-            Pid ! State,
+        {report, Pid} -> 
+            Pid ! {subscribers, State},
             server_loop(State);
         {quit} -> ok;
         _ -> server_loop(State)
