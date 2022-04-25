@@ -3,6 +3,7 @@
 // Load sprite
 
 const spriteSheet = typeof window !== 'undefined' ? new Image() : null;
+// TODO: render something with playerColor
 if (spriteSheet) spriteSheet.src = './assets/sprites/character.png';
 
 // How big is each sprite

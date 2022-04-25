@@ -10,7 +10,12 @@ const cx = classNames.bind(styles);
 export default function Homepage() {
   const router = useRouter();
   const setPlayerType = useStore((state) => state.setPlayerType);
+  const setPlayerColor = useStore((state) => state.setPlayerColor);
   const join = (desiredPlayerType) => {
+    const red = Math.floor(Math.random() * 255);
+    const green = Math.floor(Math.random() * 255);
+    const blue = Math.floor(Math.random() * 255);
+    setPlayerColor({ red, green, blue });
     setPlayerType(desiredPlayerType);
     router.push('/game');
   };

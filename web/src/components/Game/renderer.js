@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { BLOCKS_DOWN, BLOCKS_ACROSS, BLOCK_SIZE } from './constants';
 import Matter from 'matter-js';
 
