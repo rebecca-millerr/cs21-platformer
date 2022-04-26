@@ -1,24 +1,39 @@
-// Abuses perfect-cursors for smooth interpolation
-// Synchronizes with timekeeping "ticks" from the server
-// TODO: perfect-cursor develops a lag as time goes on. Need custom implementation here.
+// Provides smooth interpolated X position based on timekeeping "ticks" from the server
 
-import { useRef, useMemo, useEffect } from 'react';
-import { PerfectCursor as Interpolator } from 'perfect-cursors';
+import { useState, useMemo, useRef, useEffect } from 'react';
+
+import StreamingInterpolator from 'helpers/streaming-interpolation';
+
 import { MOVING_SPEED } from './constants';
-
 const TICKS_PER_SECOND = 8;
 
+const ticksToX = (ticks) => (ticks / TICKS_PER_SECOND) * MOVING_SPEED;
+
 export default function useInterpolatedXOffset(events) {
-  const xOffsetRef = useRef(null);
-  const pc = useMemo(() => new Interpolator(([x]) => { xOffsetRef.current = x; }), []);
+  const getter = useRef({ get: () => 0 });
+  const interp = useMemo(() => new StreamingInterpolator(), []);
+
+  // Update the getter to be functional once we get an initial value
+  const [initialX, setInitialX] = useState(null);
+  useEffect(() => {
+    if (!initialX) return;
+    getter.current.get = () => interp.getCurrentValueWithFallback([initialX, 0]).x;
+  }, [interp, initialX]);
+
 
   useEffect(() => {
-    const update = ({ ticks }) => {
-      if (ticks) pc.addPoint([(ticks / TICKS_PER_SECOND) * MOVING_SPEED, 0]);
-    };
-    events.on('socket_message', update);
-    return () => events.off('socket_message', update);
-  }, [events, pc]);
+    const handleMessage = ({ ticks, blocks }) => {
+      // the first message that we get when we join
+      if (blocks && ticks) setInitialX(ticksToX(ticks));
 
-  return xOffsetRef;
+      if (ticks) {
+        const newX = (ticks / TICKS_PER_SECOND) * MOVING_SPEED;
+        interp.addPoint([newX, 0]);
+      }
+    };
+    events.on('socket_message', handleMessage);
+    return () => events.off('socket_message', handleMessage);
+  }, [events, interp]);
+
+  return getter.current;
 }

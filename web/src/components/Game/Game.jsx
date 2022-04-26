@@ -25,7 +25,7 @@ export default function Game({ children, playerType }) {
   const events = useMemo(() => mitt(), []);
   const { socket, ownId } = useSocketConnection(playerType, events);
 
-  const interpolatedXOffsetRef = useInterpolatedXOffset(events);
+  const interpolatedXOffset = useInterpolatedXOffset(events);
   const xOffsetRef = useRef(null);
 
   /* eslint-disable object-property-newline */
@@ -51,7 +51,7 @@ export default function Game({ children, playerType }) {
       : 0; // no delta if no previous time (i.e. on first render)
     previousTimeRef.current = time;
     // Enforce that the value client modules consume is updated in sync with the frame loop
-    xOffsetRef.current = interpolatedXOffsetRef.current;
+    xOffsetRef.current = interpolatedXOffset.get();
 
     events.emit('beforeFrame', { delta });
 
@@ -64,7 +64,7 @@ export default function Game({ children, playerType }) {
 
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
-  }, [gameContext, engine, renderer, events, interpolatedXOffsetRef]);
+  }, [gameContext, engine, renderer, events, interpolatedXOffset]);
 
   // Initial setup
   useEffect(() => {
