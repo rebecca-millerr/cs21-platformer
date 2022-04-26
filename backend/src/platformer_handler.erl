@@ -35,14 +35,10 @@ json_cast(Json, State) ->
           case(State) of
             {builder, ID} -> 
               canvas_state ! {place, #{builder => ID, pos => maps:get(<<"block">>, Json)}},
-              tick_counter ! {report, self()},
-                receive
-                    {ticks, Ticks} ->
-                        broadcaster  ! {json,
-                            #{<<"ticks">> => Ticks,
-                              <<"newblock">> => #{builder => ID, pos => maps:get(<<"block">>, Json)}}},
-                        {ok, State}
-                end;
+              broadcaster  ! {json,
+                  #{<<"newblock">> =>
+                    #{builder => ID, pos => maps:get(<<"block">>, Json)}}},
+              {ok, State};
             _  -> Res = jsx:encode([{<<"error">>, <<"Must be builder to place block">>}]),
                   {reply, {text, Res}, State}
           end;
@@ -70,17 +66,10 @@ json_call(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
         <<"become-builder">> -> 
             builders_state ! {add_builder, self()},
-            tick_counter ! {report, self()},
-            receive 
-                {ticks, Ticks} -> 
-                    receive
-                        {id, ID} -> 
-                            Res = jsx:encode(#{
-                                <<"ticks">> => Ticks,
-                                <<"id">> => ID
-                            }),
-                            {reply, {text, Res}, {builder, ID}}
-                    end
+            receive
+                {id, ID} -> 
+                    Res = jsx:encode(#{<<"id">> => ID}),
+                    {reply, {text, Res}, {builder, ID}}
             end;
         <<"get-builders">> -> 
             builders_state ! {report, self()},
@@ -90,17 +79,10 @@ json_call(Json, State) ->
             end;
         <<"become-runner">> -> 
                 runners_state ! {add_runner, self()},
-                tick_counter ! {report, self()},
-                receive
-                    {ticks, Ticks} ->
-                        receive 
-                            {id, ID} ->
-                                Res = jsx:encode(#{
-                                    <<"ticks">> => Ticks,
-                                    <<"id">> => ID
-                                }),
-                                {reply, {text, Res}, {runner, ID}}
-                        end
+                receive 
+                    {id, ID} ->
+                        Res = jsx:encode(#{<<"id">> => ID}),
+                        {reply, {text, Res}, {runner, ID}}
                 end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
                   {reply, {text, Res}, State};
