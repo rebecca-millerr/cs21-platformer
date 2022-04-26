@@ -22,12 +22,8 @@ server_loop({IDs, Poses, NextID}) ->
             Pid ! {IDs, Poses},
             server_loop({IDs, Poses, NextID});
         {broadcast} ->
-            tick_counter ! {report, self()},
-            receive
-                {ticks, Ticks} ->
-                    broadcaster ! {json, #{ticks => Ticks, runners => Poses}},
-                    server_loop({IDs, Poses, NextID})
-            end;
+            broadcaster ! {json, #{runners => Poses}},
+            server_loop({IDs, Poses, NextID});
         {'DOWN', _Ref, process, Pid, Reason} ->
             io:format("runner ~w ended for reason ~w~n", [Pid, Reason]),
             ID = maps:get(Pid, IDs),
@@ -36,6 +32,5 @@ server_loop({IDs, Poses, NextID}) ->
 
 
 start() ->
-    % for now just send every 2 seconds, obv need to make much more often soon
-    {ok, _TRef} = timer:send_interval(250, {broadcast}),
+    {ok, _TRef} = timer:send_interval(20000, {broadcast}),
     server_loop({ #{}, #{}, 0 }).
