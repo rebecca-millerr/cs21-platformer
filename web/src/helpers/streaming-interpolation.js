@@ -4,9 +4,10 @@ import { CatmullRomCurve3, Vector2, Vector3 } from 'three';
 // paths between them.
 
 export default class StreamingInterpolator {
-  constructor(buffer = 1000) {
+  constructor(buffer = 1000, curveType = 'centripetal') {
     this.anchors = [];
     this.buffer = buffer; // lag behind the values provided by the server in order to be smooth
+    this.curveType = curveType;
 
     this._cachedPoints = [];
     this._cachedPointsCenter = 0;
@@ -42,6 +43,8 @@ export default class StreamingInterpolator {
       // Create the curve
       const curve = new CatmullRomCurve3(
         relevantAnchors.map(({ time, position }) => new Vector3(time, position[0], position[1])),
+        false,
+        this.curveType,
       );
 
       // Get enough points along the curve that we could have one for every 100ms (note that in
