@@ -21,8 +21,12 @@ server_loop({IDs, Poses}) ->
             Pid ! {IDs, Poses},
             server_loop({IDs, Poses});
         {broadcast} ->
-            broadcaster ! {json, #{runners => Poses}},
-            server_loop({IDs, Poses});
+            tick_counter ! {report, self()},
+            receive
+                {ticks, Ticks} -> 
+                    broadcaster ! {json, #{ticks => Ticks, runners => Poses}},
+                    server_loop({IDs, Poses})
+            end;
         {'DOWN', _Ref, process, Pid, Reason} ->
             io:format("runner ~w ended for reason ~w~n", [Pid, Reason]),
             ID = maps:get(Pid, IDs),
