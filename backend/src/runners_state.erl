@@ -24,7 +24,7 @@ server_loop({IDs, Poses, NextID}) ->
         {broadcast} ->
             tick_counter ! {report, self()},
             receive
-                {ticks, Ticks} -> 
+                {ticks, Ticks} ->
                     broadcaster ! {json, #{ticks => Ticks, runners => Poses}},
                     server_loop({IDs, Poses, NextID})
             end;
@@ -35,7 +35,7 @@ server_loop({IDs, Poses, NextID}) ->
     end.
 
 
-start() -> 
+start() ->
     % for now just send every 2 seconds, obv need to make much more often soon
-    {ok, _TRef} = timer:send_interval(2000, {broadcast}),
+    {ok, _TRef} = timer:send_interval(250, {broadcast}),
     server_loop({ #{}, #{}, 0 }).
