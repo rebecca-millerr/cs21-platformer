@@ -62,7 +62,7 @@ json_call(Json, State) ->
                                     <<"ticks">> => Ticks,
                                     <<"id">> => ID
                                 }),
-                                {reply, {text, Res}, State}
+                                {reply, {text, Res}, {runner, ID}}
                         end
                 end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
