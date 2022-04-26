@@ -1,11 +1,12 @@
 import React, { useMemo, useCallback, useRef, useEffect, createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, MOVING_SPEED } from './constants';
+import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE } from './constants';
 import Matter from 'matter-js';
 import mitt from 'mitt';
 import useRenderer from './renderer';
 import useSocketConnection from './socket';
+import useInterpolatedXOffset from './ticker';
 
 import classNames from 'classnames/bind';
 import styles from './Game.module.scss';
@@ -21,9 +22,11 @@ export default function Game({ children, playerType }) {
 
   const engine = useMemo(() => Matter.Engine.create(), []);
   const world = useMemo(() => engine.world, [engine]);
-  const xOffsetRef = useRef(0);
   const events = useMemo(() => mitt(), []);
   const { socket, ownId } = useSocketConnection(playerType, events);
+
+  const interpolatedXOffsetRef = useInterpolatedXOffset(events);
+  const xOffsetRef = useRef(null);
 
   const gameContext = useMemo(
     () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId }),
@@ -40,8 +43,8 @@ export default function Game({ children, playerType }) {
       ? (time - previousTimeRef.current) / 1000 // seconds
       : 0; // no delta if no previous time (i.e. on first render)
     previousTimeRef.current = time;
-    // Move viewport
-    xOffsetRef.current += delta * MOVING_SPEED;
+    // Enforce that the value client modules consume is updated in sync with the frame loop
+    xOffsetRef.current = interpolatedXOffsetRef.current;
 
     events.emit('beforeFrame', { delta });
 
@@ -54,7 +57,7 @@ export default function Game({ children, playerType }) {
 
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
-  }, [gameContext, engine, renderer, events]);
+  }, [gameContext, engine, renderer, events, interpolatedXOffsetRef]);
 
   // Initial setup
   useEffect(() => {
