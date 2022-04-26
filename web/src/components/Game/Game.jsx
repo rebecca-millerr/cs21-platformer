@@ -29,8 +29,10 @@ export default function Game({ children, playerType }) {
   const xOffsetRef = useRef(null);
 
   const gameContext = useMemo(
-    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId }),
-    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId],
+    () => (
+      { engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId, playerType }
+    ),
+    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId, playerType],
   );
 
   // Render loop
