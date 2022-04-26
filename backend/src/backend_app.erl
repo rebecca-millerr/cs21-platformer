@@ -14,6 +14,9 @@ start(_Type, _Args) ->
     CanvasState = spawn(canvas_state, start, []),
     register(canvas_state, CanvasState),
 
+    BuildersState = spawn(builders_state, start, []),
+    register(builders_state, BuildersState),
+
     Dispatch = cowboy_router:compile([
         {'_', [{"/", platformer_handler, []}]}
     ]),

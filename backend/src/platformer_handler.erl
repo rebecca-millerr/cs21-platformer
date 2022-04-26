@@ -51,6 +51,20 @@ json_cast(Json, State) ->
 % For handling calls based on decoded JSON data
 json_call(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
+        <<"become-builder">> -> 
+            builders_state ! {add_builder, self()},
+            tick_counter ! {report, self()},
+            receive 
+                {ticks, Ticks} -> 
+                    receive
+                        {id, ID} -> 
+                            Res = jsx:encode(#{
+                                <<"ticks">> => Ticks,
+                                <<"id">> => ID
+                            }),
+                            {reply, {text, Res}, {builder, ID}}
+                    end
+            end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
                   {reply, {text, Res}, State};
         _      -> Res = jsx:encode([{<<"error">>, <<"unrecognized call type">>}]),
