@@ -50,8 +50,10 @@ export default function Game({ children, playerType }) {
       ? (time - previousTimeRef.current) / 1000 // seconds
       : 0; // no delta if no previous time (i.e. on first render)
     previousTimeRef.current = time;
-    // Enforce that the value client modules consume is updated in sync with the frame loop
+
+    const oldXOffset = xOffsetRef.current;
     xOffsetRef.current = interpolatedXOffset.get();
+    if (oldXOffset === 0 && xOffsetRef.current !== 0) events.emit('positionFound');
 
     events.emit('beforeFrame', { delta });
 

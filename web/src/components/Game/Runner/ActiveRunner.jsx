@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 
 import { useGameContext } from '../Game';
+import { BLOCK_SIZE } from '../constants';
 
 import Matter from 'matter-js';
 import Runner from './controlled-runner';
@@ -30,14 +31,22 @@ function renderActiveRunner(gameContext) {
 
 /* Runner that is controlled by this player */
 export default function ActiveRunner() {
-  const { renderer, world, events } = useGameContext();
+  const { renderer, world, events, xOffsetRef } = useGameContext();
 
   // Create the active runner and add it to the world
   const runnerRef = useRef();
   useEffect(() => {
-    runnerRef.current = new Runner(world);
-    return () => runnerRef.current.remove();
-  }, [world]);
+    const createRunner = () => {
+      runnerRef.current = new Runner(world, xOffsetRef.current + (BLOCK_SIZE * 2));
+      events.off('positionFound', createRunner);
+    };
+    events.on('positionFound', createRunner);
+
+    return () => {
+      events.off('positionFound', createRunner);
+      if (runnerRef.current) runnerRef.current.remove();
+    };
+  }, [world, events, xOffsetRef]);
 
   // Set up support for rendering the active player
   useEffect(() => renderer.addPass(renderActiveRunner), [renderer]);
@@ -56,7 +65,7 @@ export default function ActiveRunner() {
 
   // Let runner perform necessary updates to itself on every frame
   useEffect(() => {
-    const update = () => runnerRef.current.update();
+    const update = () => runnerRef.current?.update?.();
     events.on('beforeFrame', update);
     return () => events.off('beforeFrame', update);
   }, [events, runnerRef]);
