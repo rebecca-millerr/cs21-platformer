@@ -32,15 +32,20 @@ websocket_init(State) ->
 json_cast(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
         (<<"place">>) ->
-            canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
-            tick_counter ! {report, self()},
+          case(State) of
+            {builder, ID} -> 
+              canvas_state ! {place, #{builder => ID, pos => maps:get(<<"block">>, Json)}},
+              tick_counter ! {report, self()},
                 receive
                     {ticks, Ticks} ->
                         broadcaster  ! {json,
                             #{<<"ticks">> => Ticks,
-                              <<"newblock">> => maps:get(<<"block">>, Json, #{})}}
-                end,
-                {ok, State};
+                              <<"newblock">> => #{builder => ID, pos => maps:get(<<"block">>, Json)}}},
+                        {ok, State}
+                end;
+            _  -> Res = jsx:encode([{<<"error">>, <<"Must be builder to place block">>}]),
+                  {reply, {text, Res}, State}
+          end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
         Type   -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
