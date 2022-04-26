@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import Game, { Ground, ActiveRunner, LevelEditor, PeerBlocks, DebugPane } from 'components/Game';
+import Game, { Ground, ActiveRunner, LevelEditor, PeerBlocks, DebugPane, PeerRunners } from 'components/Game';
 
 import useStore from 'store';
 import { useRouter } from 'next/router';
@@ -22,14 +22,16 @@ export default function GamePage() {
   return (
     <div className={cx('base')}>
       <Game playerType={playerType}>
+        {/* Blocks */}
         {playerType === 'builder' && <LevelEditor />}
         <PeerBlocks />
-
         <Ground />
 
+        {/* Runners */}
         {playerType === 'runner' && <ActiveRunner />}
-        {/* TODO: <OtherRunners /> */}
+        <PeerRunners />
 
+        {/* Debug info */}
         <DebugPane />
       </Game>
     </div>
