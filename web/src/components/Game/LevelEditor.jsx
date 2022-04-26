@@ -9,7 +9,7 @@ import ColorHash from 'color-hash';
 const colorHash = new ColorHash();
 
 export default function LevelEditor() {
-  const { canvasRef, world, xOffsetRef, ownId } = useGameContext();
+  const { canvasRef, world, xOffsetRef, socket, ownId } = useGameContext();
   const playerColor = typeof ownId === 'number' ? colorHash.hex(ownId.toString()) : 'transparent';
 
   // Builders can place blocks
@@ -33,7 +33,9 @@ export default function LevelEditor() {
     if (collisions.length > 0) return;
     // If it doesn't, add it to the world
     Matter.Composite.add(world, newBlock);
-  }, [world, canvasRef, xOffsetRef, playerColor]);
+    // Report to the server that we placed a block
+    socket.cast('place', { block: { x: col, y: row } });
+  }, [world, canvasRef, xOffsetRef, playerColor, socket]);
 
   // Register event listener
   useEffect(() => {

@@ -1,5 +1,6 @@
 // Abuses perfect-cursors for smooth interpolation
 // Synchronizes with timekeeping "ticks" from the server
+// TODO: perfect-cursor develops a lag as time goes on. Need custom implementation here.
 
 import { useRef, useMemo, useEffect } from 'react';
 import { PerfectCursor as Interpolator } from 'perfect-cursors';
