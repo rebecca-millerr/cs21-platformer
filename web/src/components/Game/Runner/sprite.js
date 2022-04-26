@@ -1,6 +1,8 @@
 /* Graphical representation of a runner */
+import { COLORS } from '../constants';
 
 // Load sprite
+const DOT_SPACE = 16;
 
 const spriteSheet = typeof window !== 'undefined' ? new Image() : null;
 // TODO: render something with playerColor
@@ -21,16 +23,18 @@ export const sequences = {
   fall: { seq: [22, 23], loop: true, pace: 5 },
 };
 
-
 export function getCoordinates(spriteNumber) {
   const x = (spriteNumber % sheetWidth) * spriteWidth;
   const y = Math.floor(spriteNumber / sheetWidth) * spriteHeight;
   return { x, y, width: spriteWidth, height: spriteHeight };
 }
 
-
 export default class RunnerSprite {
-  constructor(size = spriteHeight, state = 'idle') {
+  constructor(
+    size = spriteHeight,
+    color = COLORS.DEFAULT_BLOCK,
+    state = 'idle'
+  ) {
     this.state = state;
     this._counter = 0;
     this.lastFrameTime = Date.now();
@@ -39,10 +43,12 @@ export default class RunnerSprite {
 
     this._canvas = document.createElement('canvas');
     this._canvas.width = Math.ceil((size / spriteHeight) * spriteWidth);
-    this._canvas.height = size;
+    this._canvas.height = size + DOT_SPACE;
 
     this.width = this._canvas.width;
     this.height = this._canvas.height;
+
+    this.color = color;
   }
 
   setState(state) {
@@ -58,7 +64,10 @@ export default class RunnerSprite {
     if (sequences[this.state].loop) {
       this._counter %= sequences[this.state].seq.length;
     } else {
-      this._counter = Math.min(this._counter, sequences[this.state].seq.length - 1);
+      this._counter = Math.min(
+        this._counter,
+        sequences[this.state].seq.length - 1
+      );
     }
   }
 
@@ -86,13 +95,28 @@ export default class RunnerSprite {
     ctx.clearRect(0, 0, this.width, this.height);
     ctx.imageSmoothingEnabled = false;
     ctx.save();
+
+    // main sprite
     if (this.direction === -1) ctx.translate(this.width, 0);
     ctx.scale(this.direction, 1);
     ctx.drawImage(
       spriteSheet,
-      x, y, width, height, // positions on sprite sheet
-      0, 0, this.width, this.height, // positions on canvas
+      x,
+      y,
+      width,
+      height, // positions on sprite sheet
+      0,
+      DOT_SPACE,
+      this.width,
+      // this.height // positions on canvas
+      this.height - DOT_SPACE
     );
+
+    // player color dot
+    ctx.fillStyle = `rgb(${this.color.red}, ${this.color.green}, ${this.color.blue})`;
+    ctx.arc(this.width / 2, 10, 5, 0, 360);
+    ctx.fill();
+
     ctx.restore();
     return this._canvas;
   }

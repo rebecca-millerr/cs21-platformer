@@ -3,6 +3,7 @@ import { useRef, useEffect } from 'react';
 import { useGameContext } from '../Game';
 
 import Matter from 'matter-js';
+import useStore from 'store';
 import Runner from './controlled-runner';
 
 function renderActiveRunner(gameContext) {
@@ -17,11 +18,17 @@ function renderActiveRunner(gameContext) {
     const { sprite } = body.render;
     const renderedRunner = sprite.getCanvas();
     const { width, height } = renderedRunner;
-    canvasContext.drawImage(renderedRunner, x - (width / 2) - xOffset, y - (height / 2));
+    canvasContext.drawImage(
+      renderedRunner,
+      x - width / 2 - xOffset,
+      y - height / 2
+    );
     sprite.tick();
     // Debug: draw vertices of underlying body
     canvasContext.beginPath();
-    body.vertices.forEach((vert) => canvasContext.lineTo(vert.x - xOffset, vert.y));
+    body.vertices.forEach((vert) =>
+      canvasContext.lineTo(vert.x - xOffset, vert.y)
+    );
     canvasContext.closePath();
     canvasContext.strokeStyle = '#000';
     canvasContext.stroke();
@@ -31,13 +38,14 @@ function renderActiveRunner(gameContext) {
 /* Runner that is controlled by this player */
 export default function ActiveRunner() {
   const { renderer, world, events } = useGameContext();
+  const playerColor = useStore((state) => state.playerColor);
 
   // Create the active runner and add it to the world
   const runnerRef = useRef();
   useEffect(() => {
-    runnerRef.current = new Runner(world);
+    runnerRef.current = new Runner(world, playerColor);
     return () => runnerRef.current.remove();
-  }, [world]);
+  }, [world, playerColor]);
 
   // Set up support for rendering the active player
   useEffect(() => renderer.addPass(renderActiveRunner), [renderer]);

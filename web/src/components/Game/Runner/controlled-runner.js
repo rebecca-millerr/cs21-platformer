@@ -4,15 +4,18 @@ import Matter from 'matter-js';
 import RunnerSprite from './sprite';
 
 export default class Runner {
-  constructor(world) {
+  constructor(world, color) {
     this.world = world;
-    this.sprite = new RunnerSprite(50);
+    this.sprite = new RunnerSprite(50, color);
     this.body = Matter.Bodies.rectangle(
-      400, 100, this.sprite.width * 0.33, this.sprite.height,
+      400,
+      100,
+      this.sprite.width * 0.33,
+      this.sprite.height,
       {
         label: 'active-runner',
         render: { sprite: this.sprite },
-      },
+      }
     );
     Matter.Body.setInertia(this.body, Infinity);
     Matter.Composite.add(world, this.body);
@@ -48,8 +51,10 @@ export default class Runner {
       max: { x: runnerBounds.max.x, y: runnerBounds.max.y + 1 },
     };
     const bodies = Matter.Composite.allBodies(this.world);
-    const bodiesStandingOn = Matter.Query.region(bodies, platformDetectionBounds)
-      .filter((body) => ['ground', 'platform'].includes(body.label));
+    const bodiesStandingOn = Matter.Query.region(
+      bodies,
+      platformDetectionBounds
+    ).filter((body) => ['ground', 'platform'].includes(body.label));
     return bodiesStandingOn.length > 0;
   }
 
@@ -62,8 +67,10 @@ export default class Runner {
     // Player movement
 
     // Moving left / right
-    if (movingLeft) Matter.Body.setVelocity(this.body, { x: -2, y: this.body.velocity.y });
-    if (movingRight) Matter.Body.setVelocity(this.body, { x: 2, y: this.body.velocity.y });
+    if (movingLeft)
+      Matter.Body.setVelocity(this.body, { x: -2, y: this.body.velocity.y });
+    if (movingRight)
+      Matter.Body.setVelocity(this.body, { x: 2, y: this.body.velocity.y });
     // jumping
     if (this.upPressed && standing) {
       Matter.Body.setVelocity(this.body, { x: this.body.velocity.x, y: -5 });
