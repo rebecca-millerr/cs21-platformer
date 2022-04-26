@@ -19,7 +19,7 @@ export default function GamePage() {
     <div>
       Player type is {playerType}
       <br />
-      <Game>
+      <Game playerType={playerType}>
         <Ground />
         {playerType === 'runner' && <ActiveRunner />}
         {playerType === 'builder' && <LevelEditor />}

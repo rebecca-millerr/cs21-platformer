@@ -1,3 +1,5 @@
+export const WEBSOCKET_URL = 'wss://cs21-platformer.ngrok.io';
+
 // screen is BLOCKS_ACROSS wide, so BLOCKS_ACROSS + 1 can be shown at once
 export const BLOCKS_ACROSS = 16;
 export const BLOCKS_DOWN = 12;

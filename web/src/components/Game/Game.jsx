@@ -5,6 +5,7 @@ import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, MOVING_SPEED } from './constant
 import Matter from 'matter-js';
 import mitt from 'mitt';
 import useRenderer from './renderer';
+import useSocketConnection from './socket';
 
 import classNames from 'classnames/bind';
 import styles from './Game.module.scss';
@@ -14,7 +15,7 @@ export const GameContext = createContext();
 export const useGameContext = () => useContext(GameContext);
 
 
-export default function Game({ children }) {
+export default function Game({ children, playerType }) {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
@@ -22,10 +23,11 @@ export default function Game({ children }) {
   const world = useMemo(() => engine.world, [engine]);
   const xOffsetRef = useRef(0);
   const events = useMemo(() => mitt(), []);
+  const { socket, ownId } = useSocketConnection(playerType, events);
 
   const gameContext = useMemo(
-    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef, events }),
-    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events],
+    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId }),
+    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId],
   );
 
   // Render loop
@@ -101,6 +103,7 @@ export default function Game({ children }) {
 
 Game.propTypes = {
   children: PropTypes.node,
+  playerType: PropTypes.oneOf(['runner', 'builder']).isRequired,
 };
 Game.defaultProps = {
   children: null,
