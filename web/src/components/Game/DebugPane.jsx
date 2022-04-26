@@ -37,7 +37,7 @@ Bodies in world:       ${Matter.Composite.allBodies(gameContext.world).length}
 Socket connected?      ${gameContext.socket.connected}
   Own ID:              ${gameContext.ownId}
 Render FPS:            ${averageFps.toFixed(1)}
-      `;
+      `.trim();
     };
     gameContext.events.on('afterFrame', update);
     return () => gameContext.events.off('afterFrame', update);
@@ -47,8 +47,8 @@ Render FPS:            ${averageFps.toFixed(1)}
     <div
       ref={debugPaneRef}
       style={{
-        position: 'absolute',
-        top: 'calc(100% - 0.5em)',
+        position: 'fixed',
+        top: '0px',
         left: '0px',
         whiteSpace: 'pre',
         fontFamily: 'monospace',

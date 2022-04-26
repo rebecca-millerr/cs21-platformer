@@ -5,6 +5,10 @@ import Game, { Ground, ActiveRunner, LevelEditor, DebugPane } from 'components/G
 import useStore from 'store';
 import { useRouter } from 'next/router';
 
+import classNames from 'classnames/bind';
+import styles from './game.module.scss';
+const cx = classNames.bind(styles);
+
 export default function GamePage() {
   const playerType = useStore((state) => state.playerType);
 
@@ -16,15 +20,15 @@ export default function GamePage() {
   if (!playerType) return null;
 
   return (
-    <Game playerType={playerType}>
-      <Ground />
-      {playerType === 'runner' && <ActiveRunner />}
-      {playerType === 'builder' && <LevelEditor />}
-
-      {/* TODO: <OtherRunners /> */}
-      {/* TODO: <OtherBlocks /> */}
-
-      <DebugPane />
-    </Game>
+    <div className={cx('base')}>
+      <Game playerType={playerType}>
+        <Ground />
+        {playerType === 'runner' && <ActiveRunner />}
+        {playerType === 'builder' && <LevelEditor />}
+        {/* TODO: <OtherRunners /> */}
+        {/* TODO: <OtherBlocks /> */}
+        <DebugPane />
+      </Game>
+    </div>
   );
 }
