@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WEBSOCKET_URL } from './constants';
 
 export default function useSocketConnection(playerType, eventBus) {
@@ -7,10 +7,18 @@ export default function useSocketConnection(playerType, eventBus) {
   const [socket, setSocket] = useState(false); // raw WebSocket object
   const [connected, setConnected] = useState(false); // socket connection is open
 
+  const openPromiseResolverRef = useRef();
+  const openPromise = useMemo(() => new Promise((resolve) => {
+    openPromiseResolverRef.current = resolve;
+  }), []);
+
   useEffect(() => {
     const sock = new WebSocket(WEBSOCKET_URL);
 
-    sock.onopen = () => setConnected(true);
+    sock.onopen = () => {
+      setConnected(true);
+      openPromiseResolverRef.current();
+    };
     sock.onmessage = (event) => {
       let { data } = event;
       try { data = JSON.parse(data); } catch (e) {}
@@ -28,26 +36,30 @@ export default function useSocketConnection(playerType, eventBus) {
   // Make a cast (doesn't expect a response; resolves immediately)
   const cast = useCallback((type, data) => new Promise((resolve, reject) => {
     if (!socket) reject();
-    socket.send(JSON.stringify({ cast: true, type, ...data }));
-    resolve();
-  }), [socket]);
+    openPromise.then(() => { // wait for the socket connection to be open
+      socket.send(JSON.stringify({ cast: true, type, ...data }));
+      resolve();
+    });
+  }), [socket, openPromise]);
 
   // Make a call and wait for a response before resolving
   // recognizeRseponse should return true if a message looks like a response to the call that is
   // being made
   const call = useCallback((type, data, recognizeResponse) => new Promise((resolve, reject) => {
     if (!socket) reject();
-    // Make the call
-    socket.send(JSON.stringify({ call: true, type, ...data }));
-    // Listen to all messages until we find one that looks like what we expect
-    const listener = (event) => {
-      if (recognizeResponse(event)) { // does this new message look like what we're waiting for?
-        eventBus.off('socket_message', listener);
-        resolve(event);
-      }
-    };
-    eventBus.on('socket_message', listener);
-  }), [socket, eventBus]);
+    openPromise.then(() => { // wait for the socket connection to be open
+      // Make the call
+      socket.send(JSON.stringify({ call: true, type, ...data }));
+      // Listen to all messages until we find one that looks like what we expect
+      const listener = (event) => {
+        if (recognizeResponse(event)) { // does this new message look like what we're waiting for?
+          eventBus.off('socket_message', listener);
+          resolve(event);
+        }
+      };
+      eventBus.on('socket_message', listener);
+    });
+  }), [socket, openPromise, eventBus]);
 
 
   // Join the game when the socket connection opens
