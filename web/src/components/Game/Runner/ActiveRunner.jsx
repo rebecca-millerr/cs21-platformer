@@ -1,10 +1,12 @@
-import { useRef, useEffect } from 'react';
-
-import { useGameContext } from '../Game';
-import { BLOCK_SIZE } from '../constants';
-
 import Matter from 'matter-js';
 import Runner from './controlled-runner';
+
+import { useRef, useEffect, useMemo } from 'react';
+import { useGameContext } from '../Game';
+import { throttle } from 'lodash';
+
+import { BLOCK_SIZE } from '../constants';
+
 
 function renderActiveRunner(gameContext) {
   const canvasContext = gameContext.canvasContextRef.current;
@@ -31,7 +33,7 @@ function renderActiveRunner(gameContext) {
 
 /* Runner that is controlled by this player */
 export default function ActiveRunner() {
-  const { renderer, world, events, xOffsetRef } = useGameContext();
+  const { renderer, world, events, socket, xOffsetRef } = useGameContext();
 
   // Create the active runner and add it to the world
   const runnerRef = useRef();
@@ -63,12 +65,21 @@ export default function ActiveRunner() {
     };
   });
 
+  const sendServerUpdate = useMemo(() => throttle(() => {
+    if (!runnerRef.current) return;
+    const { x, y } = runnerRef.current.body.position;
+    socket.cast('update', { pos: { x, y } });
+  }, 100), [socket]);
+
   // Let runner perform necessary updates to itself on every frame
   useEffect(() => {
-    const update = () => runnerRef.current?.update?.();
+    const update = () => {
+      runnerRef.current?.update?.();
+      sendServerUpdate();
+    };
     events.on('beforeFrame', update);
     return () => events.off('beforeFrame', update);
-  }, [events, runnerRef]);
+  }, [events, runnerRef, sendServerUpdate]);
 
   return null;
 }
