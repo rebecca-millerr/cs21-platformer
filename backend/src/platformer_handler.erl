@@ -31,16 +31,21 @@ websocket_init(State) ->
 % TODO: Replace with console logging and never send a response
 json_cast(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
-        <<"place">> ->
-            canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
-            tick_counter ! {report, self()},
+        (<<"place">>) ->
+          case(State) of
+            {builder, ID} -> 
+              canvas_state ! {place, #{builder => ID, pos => maps:get(<<"block">>, Json)}},
+              tick_counter ! {report, self()},
                 receive
                     {ticks, Ticks} ->
                         broadcaster  ! {json,
                             #{<<"ticks">> => Ticks,
-                              <<"newblock">> => maps:get(<<"block">>, Json, #{})}}
-                end,
-                {ok, State};
+                              <<"newblock">> => #{builder => ID, pos => maps:get(<<"block">>, Json)}}},
+                        {ok, State}
+                end;
+            _  -> Res = jsx:encode([{<<"error">>, <<"Must be builder to place block">>}]),
+                  {reply, {text, Res}, State}
+          end;
         <<"update">> -> 
             case (State) of
                 {runner, ID} ->
@@ -63,6 +68,26 @@ json_cast(Json, State) ->
 % For handling calls based on decoded JSON data
 json_call(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
+        <<"become-builder">> -> 
+            builders_state ! {add_builder, self()},
+            tick_counter ! {report, self()},
+            receive 
+                {ticks, Ticks} -> 
+                    receive
+                        {id, ID} -> 
+                            Res = jsx:encode(#{
+                                <<"ticks">> => Ticks,
+                                <<"id">> => ID
+                            }),
+                            {reply, {text, Res}, {builder, ID}}
+                    end
+            end;
+        <<"get-builders">> -> 
+            builders_state ! {report, self()},
+            receive 
+                {builders, _, IDs} -> broadcaster ! {json, IDs},
+                {ok, State}
+            end;
         <<"become-runner">> -> 
                 runners_state ! {add_runner, self()},
                 tick_counter ! {report, self()},
