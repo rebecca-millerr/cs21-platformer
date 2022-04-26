@@ -46,6 +46,18 @@ json_cast(Json, State) ->
             _  -> Res = jsx:encode([{<<"error">>, <<"Must be builder to place block">>}]),
                   {reply, {text, Res}, State}
           end;
+        <<"update">> -> 
+            case (State) of
+                {runner, ID} ->
+                    case (maps:get(<<"pos">>, Json, nopos)) of
+                        nopos -> Res = jsx:encode([{<<"error">>, <<"Specify a position">>}]),
+                        {reply, {text, Res}, State};
+                        Pos -> runners_state ! {update, ID, Pos},
+                        {ok, State}
+                    end;
+                 _ -> Res = jsx:encode([{<<"error">>, <<"Not a runner">>}]),
+                     {reply, {text, Res}, State}
+            end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
         Type   -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
@@ -76,6 +88,20 @@ json_call(Json, State) ->
                 {builders, _, IDs} -> broadcaster ! {json, IDs},
                 {ok, State}
             end;
+        <<"become-runner">> -> 
+                runners_state ! {add_runner, self()},
+                tick_counter ! {report, self()},
+                receive
+                    {ticks, Ticks} ->
+                        receive 
+                            {id, ID} ->
+                                Res = jsx:encode(#{
+                                    <<"ticks">> => Ticks,
+                                    <<"id">> => ID
+                                }),
+                                {reply, {text, Res}, {runner, ID}}
+                        end
+                end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
                   {reply, {text, Res}, State};
         _      -> Res = jsx:encode([{<<"error">>, <<"unrecognized call type">>}]),

@@ -17,6 +17,10 @@ start(_Type, _Args) ->
     BuildersState = spawn(builders_state, start, []),
     register(builders_state, BuildersState),
 
+    RunnersState = spawn(runners_state, start, []),
+    register(runners_state, RunnersState),
+
+ 
     Dispatch = cowboy_router:compile([
         {'_', [{"/", platformer_handler, []}]}
     ]),
