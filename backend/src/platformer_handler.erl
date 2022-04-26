@@ -70,6 +70,12 @@ json_call(Json, State) ->
                             {reply, {text, Res}, {builder, ID}}
                     end
             end;
+        <<"get-builders">> -> 
+            builders_state ! {report, self()},
+            receive 
+                {builders, _, IDs} -> broadcaster ! {json, IDs},
+                {ok, State}
+            end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
                   {reply, {text, Res}, State};
         _      -> Res = jsx:encode([{<<"error">>, <<"unrecognized call type">>}]),
