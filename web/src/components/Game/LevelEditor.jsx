@@ -4,11 +4,13 @@ import { useGameContext } from './Game';
 import { BLOCK_SIZE } from './constants';
 
 import Matter from 'matter-js';
-import useStore from 'store';
+import ColorHash from 'color-hash';
+
+const colorHash = new ColorHash();
 
 export default function LevelEditor() {
-  const { canvasRef, world, xOffsetRef } = useGameContext();
-  const playerColor = useStore((state) => state.playerColor);
+  const { canvasRef, world, xOffsetRef, ownId } = useGameContext();
+  const playerColor = typeof ownId === 'number' ? colorHash.hex(ownId.toString()) : 'transparent';
 
   // Builders can place blocks
   const createBlock = useCallback((event) => {
@@ -19,13 +21,12 @@ export default function LevelEditor() {
     // Create a block for that space
     const row = Math.floor(y / BLOCK_SIZE);
     const col = Math.floor(x / BLOCK_SIZE);
-    const color = `rgb(${playerColor.red}, ${playerColor.green}, ${playerColor.blue})`;
     const newBlock = Matter.Bodies.rectangle(
       (col + 0.5) * BLOCK_SIZE,
       (row + 0.5) * BLOCK_SIZE,
       BLOCK_SIZE,
       BLOCK_SIZE,
-      { isStatic: true, label: 'platform', render: { fillStyle: color } },
+      { isStatic: true, label: 'platform', render: { fillStyle: playerColor } },
     );
     // Check that it doesn't overlap anything in the world (runners, the ground, other blocks)
     const collisions = Matter.Query.collides(newBlock, Matter.Composite.allBodies(world));

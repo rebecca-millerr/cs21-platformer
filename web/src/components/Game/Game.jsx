@@ -28,12 +28,17 @@ export default function Game({ children, playerType }) {
   const interpolatedXOffsetRef = useInterpolatedXOffset(events);
   const xOffsetRef = useRef(null);
 
+  /* eslint-disable object-property-newline */
   const gameContext = useMemo(
-    () => (
-      { engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId, playerType }
-    ),
-    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events, socket, ownId, playerType],
+    () => ({
+      engine, world, xOffsetRef, // Physics world
+      ownId, playerType, // Player identity
+      events, socket, // Connections
+      canvasRef, canvasContextRef, // Drawing
+    }),
+    [engine, world, events, socket, ownId, playerType],
   );
+  /* eslint-enable */
 
   // Render loop
   const requestRef = useRef();
@@ -84,7 +89,6 @@ export default function Game({ children, playerType }) {
         const leftEdge = xOffsetRef.current;
         // Every vertex is off the left edge of the screen by at least BLOCK_SIZE pixels
         if (vertices.every(({ x }) => x < leftEdge - BLOCK_SIZE)) {
-          console.log('removing body that went off screen');
           Matter.Composite.remove(world, body);
         }
       });
