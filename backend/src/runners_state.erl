@@ -21,7 +21,7 @@ server_loop({IDs, Poses}) ->
             Pid ! {IDs, Poses},
             server_loop({IDs, Poses});
         {broadcast} ->
-            broadcaster ! {json, Poses},
+            broadcaster ! {json, #{runners => Poses}},
             server_loop({IDs, Poses});
         {'DOWN', _Ref, process, Pid, Reason} ->
             io:format("runner ~w ended for reason ~w~n", [Pid, Reason]),
@@ -31,4 +31,6 @@ server_loop({IDs, Poses}) ->
 
 
 start() -> 
+    % for now just send every 2 seconds, obv need to make much more often soon
+    {ok, _TRef} = timer:send_interval(2000, {broadcast}),
     server_loop({ #{}, #{} }).
