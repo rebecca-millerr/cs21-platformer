@@ -47,7 +47,7 @@ export default function Game({ children, playerType }) {
   const animate = useCallback((time) => {
     // Timekeeping
     const delta = (time && previousTimeRef.current)
-      ? (time - previousTimeRef.current) / 1000 // seconds
+      ? (time - previousTimeRef.current) // ms
       : 0; // no delta if no previous time (i.e. on first render)
     previousTimeRef.current = time;
 
@@ -58,7 +58,14 @@ export default function Game({ children, playerType }) {
     events.emit('beforeFrame', { delta });
 
     // Run physics simulation
-    Matter.Engine.update(engine, delta * 1000);
+    // If more than 1 / 60 of a second has elapsed, run the simulation in little steps
+    const maxDelta = 1000 / 60;
+    // subSteps > 0 iff more than 1/60 secs elapsed; if delta < maxDelta the loop doesn't run
+    const subSteps = Math.floor(delta / maxDelta);
+    for (let i = 0; i < subSteps; i += 1) Matter.Engine.update(engine, maxDelta);
+    // Get over the finish line to the proper delta we're trying to reach
+    Matter.Engine.update(engine, (delta - (subSteps * maxDelta)));
+
     // Paint the picture
     renderer.draw(gameContext);
 
