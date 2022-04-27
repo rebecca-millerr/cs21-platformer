@@ -6,7 +6,7 @@ import RunnerSprite from './sprite';
 export default class Runner {
   constructor(world, startingX) {
     this.world = world;
-    this.sprite = new RunnerSprite(50);
+    this.sprite = new RunnerSprite();
     this.body = Matter.Bodies.rectangle(
       startingX, 100, this.sprite.width * 0.33, this.sprite.height,
       {
