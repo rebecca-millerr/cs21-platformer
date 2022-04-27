@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Game, { Ground, ActiveRunner, LevelEditor, PeerBlocks, DebugPane, PeerRunners } from 'components/Game';
 
@@ -17,6 +17,18 @@ export default function GamePage() {
   useEffect(() => {
     if (!playerType) router.push('/');
   }, [router, playerType]);
+
+  // Debug menu is a secret
+  const [showDebug, setShowDebug] = useState(false);
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'd') setShowDebug(!showDebug);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showDebug]);
+
+
   if (!playerType) return null;
 
   return (
@@ -32,7 +44,7 @@ export default function GamePage() {
         <PeerRunners />
 
         {/* Debug info */}
-        <DebugPane />
+        {showDebug && <DebugPane />}
       </Game>
     </div>
   );

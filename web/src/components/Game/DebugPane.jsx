@@ -29,6 +29,7 @@ export default function DebugPane() {
       const pairwiseFps = pairIndices.map((i) => fps(lastUpdateTimes[i], lastUpdateTimes[i + 1]));
       const averageFps = pairwiseFps.reduce((a, b) => a + b, 0) / pairwiseFps.length;
 
+      if (!debugPaneRef.current) return;
       debugPaneRef.current.innerHTML = `
 Horizontal scroll:     ${gameContext.xOffsetRef.current?.toFixed?.(3)}
   Target from server:  ${tickXRef.current?.toFixed?.(3)}
