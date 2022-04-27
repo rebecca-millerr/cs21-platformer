@@ -34,7 +34,6 @@ export default function PeerBlocks() {
         .map(({ pos, builder }) => getBlock(pos.y, pos.x, builder));
 
       Matter.Composite.add(world, newBlocks);
-      console.log(`added ${newBlocks.length} blocks from server`);
     };
 
     events.on('socket_message', handleMessage);
