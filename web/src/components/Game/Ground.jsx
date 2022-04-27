@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useGameContext } from './Game';
 import Matter from 'matter-js';
 
-import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, COLORS } from './constants';
+import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE } from './constants';
 
 export default function Ground() {
   const { world, events, xOffsetRef } = useGameContext();
@@ -17,7 +17,7 @@ export default function Ground() {
       (BLOCKS_DOWN - 0.5) * BLOCK_SIZE,
       BLOCKS_ACROSS * BLOCK_SIZE,
       BLOCK_SIZE,
-      { isStatic: true, label: 'ground', render: { fillStyle: COLORS.GROUND } },
+      { isStatic: true, label: 'ground', render: { fillStyle: '#15803d' } },
     );
     Matter.Composite.add(world, groundRef.current);
 

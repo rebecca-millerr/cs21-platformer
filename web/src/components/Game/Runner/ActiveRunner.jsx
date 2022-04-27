@@ -22,12 +22,6 @@ function renderActiveRunner(gameContext) {
     const { width, height } = renderedRunner;
     canvasContext.drawImage(renderedRunner, x - (width / 2) - xOffset, y - (height / 2));
     sprite.tick();
-    // Debug: draw vertices of underlying body
-    canvasContext.beginPath();
-    body.vertices.forEach((vert) => canvasContext.lineTo(vert.x - xOffset, vert.y));
-    canvasContext.closePath();
-    canvasContext.strokeStyle = '#000';
-    canvasContext.stroke();
   });
 }
 
