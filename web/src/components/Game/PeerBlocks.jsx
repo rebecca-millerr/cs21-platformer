@@ -21,7 +21,7 @@ function getBlock(row, col, builder) {
 }
 
 export default function PeerBlocks() {
-  const { events, world, ownId } = useGameContext();
+  const { events, world, playerType, ownId } = useGameContext();
 
   // Add new blocks from the websocket connection to the world
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function PeerBlocks() {
       if (!newBlockSpecs) return;
 
       const newBlocks = newBlockSpecs
-        .filter(({ builder }) => builder !== ownId)
+        .filter(({ builder }) => playerType === 'runner' || builder !== ownId)
         .map(({ pos, builder }) => getBlock(pos.y, pos.x, builder));
 
       Matter.Composite.add(world, newBlocks);
@@ -39,7 +39,7 @@ export default function PeerBlocks() {
 
     events.on('socket_message', handleMessage);
     return () => { events.off('socket_message', handleMessage); };
-  }, [events, world, ownId]);
+  }, [events, world, ownId, playerType]);
 
   return null;
 }

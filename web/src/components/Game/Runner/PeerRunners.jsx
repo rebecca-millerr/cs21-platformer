@@ -7,12 +7,12 @@ export default function PeerRunners() {
   const peerRunners = useRef({});
 
   // Track runner positions from server
-  const { events, ownId } = useGameContext();
+  const { events, ownId, playerType } = useGameContext();
   useEffect(() => {
     const handleMessage = ({ runners }) => {
       if (!runners) return;
       const trackedIds = Object.keys(peerRunners.current);
-      const currentIds = Object.keys(runners).filter((id) => id !== ownId?.toString?.());
+      const currentIds = Object.keys(runners).filter((id) => playerType === 'builder' || id !== ownId?.toString?.());
 
       const lostIds = trackedIds.filter((id) => !currentIds.includes(id));
       const newIds = currentIds.filter((id) => !trackedIds.includes(id));
@@ -33,7 +33,7 @@ export default function PeerRunners() {
 
     events.on('socket_message', handleMessage);
     return () => events.off('socket_message', handleMessage);
-  }, [events, ownId]);
+  }, [events, ownId, playerType]);
 
 
   // Rendering
