@@ -31,7 +31,6 @@ server_loop({IDs, Poses, NextID}) ->
     end.
 
 
-start() -> 
-    % for now just send every 20 seconds, obv need to make much more often soon
-    {ok, _TRef} = timer:send_interval(20000, {broadcast}),
+start() ->
+    {ok, _TRef} = timer:send_interval(50, {broadcast}),
     server_loop({ #{}, #{}, 0 }).

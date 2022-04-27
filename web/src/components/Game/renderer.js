@@ -27,21 +27,6 @@ export function renderPlatforms({ world, ...gameContext }) {
   });
 }
 
-export function renderRunners({ canvasContextRef, xOffsetRef, world }) {
-  const canvasContext = canvasContextRef.current;
-  const xOffset = xOffsetRef.current;
-
-  Matter.Composite.allBodies(world).forEach((body) => {
-    if (body.label !== 'runner') return;
-    const { x, y } = body.position;
-    const { runner } = body.render;
-    const renderedRunner = runner.getCanvas();
-    const { width, height } = renderedRunner;
-    canvasContext.drawImage(renderedRunner, x - xOffset - (width / 2), y - (height / 2));
-    runner.tick();
-  });
-}
-
 
 export function renderGrid({ canvasContextRef, xOffsetRef }) {
   const canvasContext = canvasContextRef.current;
@@ -92,6 +77,5 @@ export default function useRenderer() {
     renderGround,
     renderPlatforms,
     renderGrid,
-    renderRunners,
   ]), []);
 }

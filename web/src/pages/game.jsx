@@ -1,9 +1,13 @@
 import React, { useEffect } from 'react';
 
-import Game, { Ground, ActiveRunner, LevelEditor } from 'components/Game';
+import Game, { Ground, ActiveRunner, LevelEditor, PeerBlocks, DebugPane, PeerRunners } from 'components/Game';
 
 import useStore from 'store';
 import { useRouter } from 'next/router';
+
+import classNames from 'classnames/bind';
+import styles from './game.module.scss';
+const cx = classNames.bind(styles);
 
 export default function GamePage() {
   const playerType = useStore((state) => state.playerType);
@@ -16,16 +20,19 @@ export default function GamePage() {
   if (!playerType) return null;
 
   return (
-    <div>
-      Player type is {playerType}
-      <br />
-      <Game>
-        <Ground />
-        {playerType === 'runner' && <ActiveRunner />}
+    <div className={cx('base')}>
+      <Game playerType={playerType}>
+        {/* Blocks */}
         {playerType === 'builder' && <LevelEditor />}
+        <PeerBlocks />
+        <Ground />
 
-        {/* TODO: <OtherRunners /> */}
-        {/* TODO: <OtherBlocks /> */}
+        {/* Runners */}
+        {playerType === 'runner' && <ActiveRunner />}
+        <PeerRunners />
+
+        {/* Debug info */}
+        <DebugPane />
       </Game>
     </div>
   );

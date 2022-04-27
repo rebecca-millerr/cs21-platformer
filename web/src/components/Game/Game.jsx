@@ -1,10 +1,12 @@
 import React, { useMemo, useCallback, useRef, useEffect, createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE, MOVING_SPEED } from './constants';
+import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE } from './constants';
 import Matter from 'matter-js';
 import mitt from 'mitt';
 import useRenderer from './renderer';
+import useSocketConnection from './socket';
+import useInterpolatedXOffset from './ticker';
 
 import classNames from 'classnames/bind';
 import styles from './Game.module.scss';
@@ -14,19 +16,29 @@ export const GameContext = createContext();
 export const useGameContext = () => useContext(GameContext);
 
 
-export default function Game({ children }) {
+export default function Game({ children, playerType }) {
   const canvasRef = useRef();
   const canvasContextRef = useRef();
 
   const engine = useMemo(() => Matter.Engine.create(), []);
   const world = useMemo(() => engine.world, [engine]);
-  const xOffsetRef = useRef(0);
   const events = useMemo(() => mitt(), []);
+  const { socket, ownId } = useSocketConnection(playerType, events);
 
+  const interpolatedXOffset = useInterpolatedXOffset(events);
+  const xOffsetRef = useRef(null);
+
+  /* eslint-disable object-property-newline */
   const gameContext = useMemo(
-    () => ({ engine, world, canvasRef, canvasContextRef, xOffsetRef, events }),
-    [engine, world, canvasRef, canvasContextRef, xOffsetRef, events],
+    () => ({
+      engine, world, xOffsetRef, // Physics world
+      ownId, playerType, // Player identity
+      events, socket, // Connections
+      canvasRef, canvasContextRef, // Drawing
+    }),
+    [engine, world, events, socket, ownId, playerType],
   );
+  /* eslint-enable */
 
   // Render loop
   const requestRef = useRef();
@@ -38,8 +50,10 @@ export default function Game({ children }) {
       ? (time - previousTimeRef.current) // ms
       : 0; // no delta if no previous time (i.e. on first render)
     previousTimeRef.current = time;
-    // Move viewport
-    xOffsetRef.current += (delta / 1000) * MOVING_SPEED;
+
+    const oldXOffset = xOffsetRef.current;
+    xOffsetRef.current = interpolatedXOffset.get();
+    if (oldXOffset === 0 && xOffsetRef.current !== 0) events.emit('positionFound');
 
     events.emit('beforeFrame', { delta });
 
@@ -59,7 +73,7 @@ export default function Game({ children }) {
 
     // On to the next frame
     requestRef.current = requestAnimationFrame(animate);
-  }, [gameContext, engine, renderer, events]);
+  }, [gameContext, engine, renderer, events, interpolatedXOffset]);
 
   // Initial setup
   useEffect(() => {
@@ -84,7 +98,6 @@ export default function Game({ children }) {
         const leftEdge = xOffsetRef.current;
         // Every vertex is off the left edge of the screen by at least BLOCK_SIZE pixels
         if (vertices.every(({ x }) => x < leftEdge - BLOCK_SIZE)) {
-          console.log('removing body that went off screen');
           Matter.Composite.remove(world, body);
         }
       });
@@ -108,6 +121,7 @@ export default function Game({ children }) {
 
 Game.propTypes = {
   children: PropTypes.node,
+  playerType: PropTypes.oneOf(['runner', 'builder']).isRequired,
 };
 Game.defaultProps = {
   children: null,
