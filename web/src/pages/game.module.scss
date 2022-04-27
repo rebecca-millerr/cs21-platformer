@@ -1,12 +1,6 @@
 @use 'sass:color';
 
-.base {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-}
-
+.status,
 .instructions {
   display: flex;
   position: relative;
@@ -16,6 +10,15 @@
   color: #94a3b8;
   margin-top: 0.75em;
   padding: 0 2px;
+}
+
+.status {
+  margin-bottom: 0.75em;
+  order: -1;
+}
+
+.instructions {
+  margin-top: 0.75em;
 
   kbd {
     display: inline-flex;
