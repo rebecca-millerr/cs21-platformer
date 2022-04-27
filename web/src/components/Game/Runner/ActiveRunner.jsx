@@ -55,8 +55,8 @@ export default function ActiveRunner() {
 
   // Set up key event handling
   useEffect(() => {
-    const onKeyDown = (e) => runnerRef.current.onKeyDown(e);
-    const onKeyUp = (e) => runnerRef.current.onKeyUp(e);
+    const onKeyDown = (e) => runnerRef.current?.onKeyDown?.(e);
+    const onKeyUp = (e) => runnerRef.current?.onKeyUp?.(e);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     return () => {
@@ -68,7 +68,7 @@ export default function ActiveRunner() {
   const sendServerUpdate = useMemo(() => throttle(() => {
     if (!runnerRef.current) return;
     const { x, y } = runnerRef.current.body.position;
-    socket.cast('update', { pos: { x, y } });
+    socket.cast('update', { pos: { x, y } }).catch(() => {});
   }, 50), [socket]);
 
   // Let runner perform necessary updates to itself on every frame
