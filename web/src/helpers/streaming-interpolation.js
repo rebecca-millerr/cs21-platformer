@@ -38,7 +38,8 @@ export default class StreamingInterpolator {
       const relevantIndices = [-2, -1, 0, 1].map((i) => indexAfter + i);
       const relevantAnchors = relevantIndices.map((i) => this.anchors[i]);
 
-      if (relevantAnchors.some((p) => !p)) { return null; }
+      const isGoodPoint = (p) => p && p.time && p.position[0] != null && p.position[1] != null;
+      if (relevantAnchors.some((p) => !isGoodPoint(p))) return null;
 
       // Create the curve
       const curve = new CatmullRomCurve3(
@@ -50,7 +51,8 @@ export default class StreamingInterpolator {
       // Get enough points along the curve that we could have one for every 100ms (note that in
       // practice they won't line up like that)
       const timeSpan = relevantAnchors[3].time - relevantAnchors[0].time;
-      const numPoints = Math.round(timeSpan / 100);
+      const numPoints = Math.round(timeSpan / (this.buffer / 20));
+      if (numPoints < 2) return null;
       this._cachedPoints = curve.getSpacedPoints(numPoints);
       this._cachedPointsCenter = timeAfter;
 
@@ -61,6 +63,7 @@ export default class StreamingInterpolator {
     const curvePoints = this._cachedPoints;
     // Find one point on the smooth curve on either side of the time we're trying to reconstruct
     const afterOnCurveIdx = curvePoints.findIndex((p) => p.x > searchTime);
+    if (afterOnCurveIdx < 1) return null;
     const afterOnCurve = curvePoints[afterOnCurveIdx];
     const beforeOnCurve = curvePoints[afterOnCurveIdx - 1];
     // Simple linear interpolation between those two points
