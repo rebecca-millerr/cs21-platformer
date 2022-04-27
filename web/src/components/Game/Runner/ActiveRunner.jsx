@@ -69,7 +69,7 @@ export default function ActiveRunner() {
     if (!runnerRef.current) return;
     const { x, y } = runnerRef.current.body.position;
     socket.cast('update', { pos: { x, y } });
-  }, 100), [socket]);
+  }, 50), [socket]);
 
   // Let runner perform necessary updates to itself on every frame
   useEffect(() => {

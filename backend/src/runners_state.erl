@@ -32,5 +32,5 @@ server_loop({IDs, Poses, NextID}) ->
 
 
 start() ->
-    {ok, _TRef} = timer:send_interval(20000, {broadcast}),
+    {ok, _TRef} = timer:send_interval(50, {broadcast}),
     server_loop({ #{}, #{}, 0 }).

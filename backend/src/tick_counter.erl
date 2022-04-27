@@ -7,10 +7,10 @@
 count_loop(N) ->
     receive
         {increment} -> count_loop(N + 1);
-        {report, Pid} -> 
+        {report, Pid} ->
             Pid ! {ticks, N},
             count_loop(N);
-        {broadcast} -> 
+        {broadcast} ->
             broadcaster ! {json, #{ticks => N}},
             count_loop(N);
         {quit} -> ok
@@ -20,6 +20,6 @@ count_loop(N) ->
 start() ->
     % TODO: handle errors here?
     {ok, _TRefIncr} = timer:send_interval(125, {increment}), % 8 ticks / s
-    {ok, _TRefBdct} = timer:send_interval(5000, {broadcast}), % 1 broadcast / 5s
+    {ok, _TRefBdct} = timer:send_interval(250, {broadcast}), % 4 broadcasts / s
     count_loop(0).
 

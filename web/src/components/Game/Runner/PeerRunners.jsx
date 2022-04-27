@@ -20,8 +20,8 @@ export default function PeerRunners() {
       lostIds.forEach((id) => { delete peerRunners.current[id]; });
       newIds.forEach((id) => {
         peerRunners.current[id] = {
-          x: new StreamingInterpolator(500),
-          y: new StreamingInterpolator(500),
+          x: new StreamingInterpolator(100),
+          y: new StreamingInterpolator(100),
         };
       });
 
