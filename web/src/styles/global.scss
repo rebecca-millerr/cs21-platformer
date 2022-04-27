@@ -13,5 +13,8 @@ body {
 }
 
 #__next {
-  display: contents;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }

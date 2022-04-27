@@ -1,6 +1,39 @@
+@use 'sass:color';
+
 .base {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: center;
-  height: 100%;
+}
+
+.instructions {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  margin-top: 0.75em;
+  padding: 0 2px;
+
+  kbd {
+    display: inline-flex;
+    background: color.mix(#e2e8f0, #f1f5f9);
+    color: #334155;
+    align-items: center;
+    justify-content: center;
+    &:not(:last-child) {
+      margin-right: 6px;
+    }
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+
+    svg {
+      width: 16px;
+      height: 16px;
+      margin: 2px;
+    }
+  }
 }
