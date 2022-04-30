@@ -9,7 +9,9 @@ import colorFromId from 'helpers/color-from-id';
 
 
 function getBlock(row, col, builder) {
-  const color = typeof builder === 'number' ? colorFromId(builder) : 'transparent';
+  const color = typeof builder === 'number'
+    ? colorFromId(builder)
+    : 'transparent';
 
   return Matter.Bodies.rectangle(
     (col + 0.5) * BLOCK_SIZE,
@@ -25,8 +27,8 @@ export default function PeerBlocks() {
 
   // Add new blocks from the websocket connection to the world
   useEffect(() => {
-    const handleMessage = (message) => {
-      const newBlockSpecs = message.blocks ?? (message.newblock && [message.newblock]);
+    const handleMessage = ({ blocks, newblock }) => {
+      const newBlockSpecs = blocks ?? (newblock && [newblock]);
       if (!newBlockSpecs) return;
 
       const newBlocks = newBlockSpecs

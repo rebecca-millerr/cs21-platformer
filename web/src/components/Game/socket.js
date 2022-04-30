@@ -5,7 +5,7 @@ export default function useSocketConnection(playerType, eventBus) {
   // Open socket connection and set up basic event listeners
 
   const [socket, setSocket] = useState(false); // raw WebSocket object
-  const [connected, setConnected] = useState(false); // socket connection is open
+  const [connected, setConnected] = useState(false); // connection is open
 
   useEffect(() => {
     const sock = new WebSocket(WEBSOCKET_URL);
@@ -40,21 +40,25 @@ export default function useSocketConnection(playerType, eventBus) {
   }), [socket, connected]);
 
   // Make a call and wait for a response before resolving
-  // recognizeRseponse should return true if a message looks like a response to the call that is
-  // being made
-  const call = useCallback((type, data, recognizeResponse) => new Promise((resolve, reject) => {
-    if (!socket || !connected) reject();
-    // Make the call
-    socket.send(JSON.stringify({ call: true, type, ...data }));
-    // Listen to all messages until we find one that looks like what we expect
-    const listener = (event) => {
-      if (recognizeResponse(event)) { // does this new message look like what we're waiting for?
-        eventBus.off('socket_message', listener);
-        resolve(event);
-      }
-    };
-    eventBus.on('socket_message', listener);
-  }), [socket, connected, eventBus]);
+  // recognizeRseponse should return true if a message looks like a response to
+  // the call that is being made
+  const call = useCallback(
+    (type, data, recognizeResponse) => new Promise((resolve, reject) => {
+      if (!socket || !connected) reject();
+      // Make the call
+      socket.send(JSON.stringify({ call: true, type, ...data }));
+      // Listen to all messages until we find one that looks like what we expect
+      const listener = (event) => {
+        // does this new message look like what we're waiting for?
+        if (recognizeResponse(event)) {
+          eventBus.off('socket_message', listener);
+          resolve(event);
+        }
+      };
+      eventBus.on('socket_message', listener);
+    }),
+    [socket, connected, eventBus],
+  );
 
 
   // Join the game when the socket connection opens

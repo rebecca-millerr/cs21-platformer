@@ -23,11 +23,14 @@ export default function DebugPane() {
     const update = () => {
       // FPS
       const now = performance.now();
-      pairIndices.forEach((i) => { lastUpdateTimes[i] = lastUpdateTimes[i + 1]; });
+      pairIndices.forEach((i) => {
+        lastUpdateTimes[i] = lastUpdateTimes[i + 1];
+      });
       lastUpdateTimes[lastUpdateTimes.length - 1] = now;
       const fps = (a, b) => 1000 / (b - a);
-      const pairwiseFps = pairIndices.map((i) => fps(lastUpdateTimes[i], lastUpdateTimes[i + 1]));
-      const averageFps = pairwiseFps.reduce((a, b) => a + b, 0) / pairwiseFps.length;
+      const fpses = pairIndices
+        .map((i) => fps(lastUpdateTimes[i], lastUpdateTimes[i + 1]));
+      const averageFps = fpses.reduce((a, b) => a + b, 0) / fpses.length;
 
       if (!debugPaneRef.current) return;
       debugPaneRef.current.innerHTML = `

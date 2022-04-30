@@ -1,6 +1,8 @@
 import colors from 'tailwindcss/colors';
 
-const hueCycle = ['rose', 'fuchsia', 'violet', 'blue', 'emerald', 'amber', 'pink'];
+const hueCycle = [
+  'rose', 'fuchsia', 'violet', 'blue', 'emerald', 'amber', 'pink',
+];
 const shadeCycle = [600, 300, 500, 900];
 
 export default function colorFromId(id) {

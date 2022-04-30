@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-import Game, { Ground, ActiveRunner, LevelEditor, PeerBlocks, DebugPane, PeerRunners } from 'components/Game';
+import Game, {
+  Ground, ActiveRunner, LevelEditor, PeerBlocks, DebugPane, PeerRunners,
+} from 'components/Game';
 import { useGameContext } from 'components/Game/Game';
 
 import useStore from 'store';
@@ -25,6 +27,7 @@ function InstructionsBar() {
       <div className={cx('instructions')}>
         <div>Use arrow keys to move</div>
         <div>
+          {/* sorry mark these SVG paths can't fit in 80 cols pls forgive us */}
           <kbd><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" /></svg></kbd>
           <kbd><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" /></svg></kbd>
           <kbd><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg></kbd>
@@ -49,7 +52,8 @@ function StatusBar() {
 export default function GamePage() {
   const playerType = useStore((state) => state.playerType);
 
-  // Kick out players that have no type (i.e. they navigated to the game page directly)
+  // Kick out players that have no type (i.e. they navigated to the game page
+  // directly)
   const router = useRouter();
   useEffect(() => {
     if (!playerType) router.push('/');

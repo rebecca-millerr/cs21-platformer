@@ -66,8 +66,8 @@ class Renderer {
   }
 
   draw(gameContext) {
-    const canvasContext = gameContext.canvasContextRef.current;
-    canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+    const canvasCtx = gameContext.canvasContextRef.current;
+    canvasCtx.clearRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
     this.passes.forEach((pass) => pass(gameContext));
   }
 }

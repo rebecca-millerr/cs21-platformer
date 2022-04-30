@@ -1,4 +1,5 @@
-// Provides smooth interpolated X position based on timekeeping "ticks" from the server
+// Provides smooth interpolated X position based on timekeeping "ticks" from the
+// server
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 
@@ -17,7 +18,8 @@ export default function useInterpolatedXOffset(events) {
   const [initialX, setInitialX] = useState(null);
   useEffect(() => {
     if (!initialX) return;
-    getter.current.get = () => interp.getCurrentValueWithFallback([initialX, 0]).x;
+    getter.current.get = () => interp
+      .getCurrentValueWithFallback([initialX, 0]).x;
   }, [interp, initialX]);
 
 
