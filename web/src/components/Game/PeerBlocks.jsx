@@ -4,12 +4,12 @@ import { useGameContext } from './Game';
 import { BLOCK_SIZE } from './constants';
 
 import Matter from 'matter-js';
-import ColorHash from 'color-hash';
 
-const colorHash = new ColorHash();
+import colorFromId from 'helpers/color-from-id';
+
 
 function getBlock(row, col, builder) {
-  const color = typeof builder === 'number' ? colorHash.hex(builder.toString()) : 'transparent';
+  const color = typeof builder === 'number' ? colorFromId(builder) : 'transparent';
 
   return Matter.Bodies.rectangle(
     (col + 0.5) * BLOCK_SIZE,

@@ -11,11 +11,6 @@
   grid-template-rows: auto;
   column-gap: 1rem;
 
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
   h1 {
     grid-column: left-edge / right-edge;
     text-align: center;

@@ -4,13 +4,12 @@ import { useGameContext } from './Game';
 import { BLOCK_SIZE } from './constants';
 
 import Matter from 'matter-js';
-import ColorHash from 'color-hash';
 
-const colorHash = new ColorHash();
+import colorFromId from 'helpers/color-from-id';
 
 export default function LevelEditor() {
   const { canvasRef, world, xOffsetRef, socket, ownId } = useGameContext();
-  const playerColor = typeof ownId === 'number' ? colorHash.hex(ownId.toString()) : 'transparent';
+  const playerColor = typeof ownId === 'number' ? colorFromId(ownId) : 'transparent';
 
   // Builders can place blocks
   const createBlock = useCallback((event) => {

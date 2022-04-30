@@ -33,7 +33,7 @@ export function renderGrid({ canvasContextRef, xOffsetRef }) {
   const xOffset = xOffsetRef.current;
 
   // Latitude lines
-  canvasContext.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  canvasContext.strokeStyle = 'rgba(0, 0, 0, 0.1)';
   for (let y = 0; y <= BLOCKS_DOWN; y += 1) {
     canvasContext.beginPath();
     canvasContext.moveTo(0, y * BLOCK_SIZE);

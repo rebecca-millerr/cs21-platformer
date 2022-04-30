@@ -111,8 +111,8 @@ export default function Game({ children, playerType }) {
     <GameContext.Provider
       value={useMemo(() => ({ ...gameContext, renderer }), [gameContext, renderer])}
     >
-      <div className={cx('base')} style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}>
-        <canvas ref={canvasRef} className={cx('canvas')} />
+      <div className={cx('base')}>
+        <canvas ref={canvasRef} className={cx('canvas')} style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }} />
         {children}
       </div>
     </GameContext.Provider>

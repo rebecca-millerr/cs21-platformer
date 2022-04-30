@@ -11,7 +11,7 @@ const ticksToX = (ticks) => (ticks / TICKS_PER_SECOND) * MOVING_SPEED;
 
 export default function useInterpolatedXOffset(events) {
   const getter = useRef({ get: () => 0 });
-  const interp = useMemo(() => new StreamingInterpolator(750), []);
+  const interp = useMemo(() => new StreamingInterpolator(1500), []);
 
   // Update the getter to be functional once we get an initial value
   const [initialX, setInitialX] = useState(null);
