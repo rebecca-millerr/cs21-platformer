@@ -58,7 +58,10 @@ export default class RunnerSprite {
     if (sequences[this.state].loop) {
       this._counter %= sequences[this.state].seq.length;
     } else {
-      this._counter = Math.min(this._counter, sequences[this.state].seq.length - 1);
+      this._counter = Math.min(
+        this._counter,
+        sequences[this.state].seq.length - 1,
+      );
     }
   }
 

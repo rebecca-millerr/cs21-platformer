@@ -24,7 +24,10 @@ export default function Ground() {
     // Keep it underfoot
     const moveGround = () => {
       const newX = (BLOCKS_ACROSS * BLOCK_SIZE) / 2 + xOffsetRef.current;
-      Matter.Body.setPosition(groundRef.current, { x: newX, y: groundRef.current.position.y });
+      Matter.Body.setPosition(
+        groundRef.current,
+        { x: newX, y: groundRef.current.position.y },
+      );
     };
     events.on('beforeFrame', moveGround);
 
