@@ -25,7 +25,7 @@ server_loop(State) ->
             spawn(fun() -> broadcast_message(Message, State) end),
             server_loop(State);
         {json, Message} -> 
-            broadcast_message(jsx:encode(Message), State),
+            spawn(fun() -> broadcast_message(jsx:encode(Message), State) end),
             server_loop(State);
         {'DOWN', _Ref, process, Pid, Reason} ->
             io:format("process ~w ended for reason ~w~n", [Pid, Reason]),
