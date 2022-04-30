@@ -21,7 +21,7 @@ server_loop(State) ->
             erlang:monitor(process, Pid),
             server_loop([ Pid | State]);
         {message, Message} ->
-            broadcast_message(Message, State),
+            spawn(fun() -> broadcast_message(Message, State) end),
             server_loop(State);
         {json, Message} -> 
             broadcast_message(jsx:encode(Message), State),
