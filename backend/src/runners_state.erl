@@ -27,7 +27,8 @@ server_loop({IDs, Poses, NextID}) ->
         {'DOWN', _Ref, process, Pid, Reason} ->
             io:format("runner ~w ended for reason ~w~n", [Pid, Reason]),
             ID = maps:get(Pid, IDs),
-            server_loop({maps:remove(Pid, IDs), maps:remove(ID, Poses), NextID})
+            server_loop({maps:remove(Pid, IDs), 
+                         maps:remove(ID, Poses), NextID})
     end.
 
 
