@@ -32,15 +32,28 @@ websocket_init(State) ->
 json_cast(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
         (<<"place">>) ->
-            canvas_state ! {place, maps:get(<<"block">>, Json, #{})},
-            tick_counter ! {report, self()},
-                receive
-                    {ticks, Ticks} ->
-                        broadcaster  ! {json,
-                            #{<<"ticks">> => Ticks,
-                              <<"newblock">> => maps:get(<<"block">>, Json, #{})}}
-                end,
-                {ok, State};
+          case(State) of
+            {builder, ID} -> 
+              canvas_state ! {place, #{builder => ID, pos => maps:get(<<"block">>, Json)}},
+              broadcaster  ! {json,
+                  #{<<"newblock">> =>
+                    #{builder => ID, pos => maps:get(<<"block">>, Json)}}},
+              {ok, State};
+            _  -> Res = jsx:encode([{<<"error">>, <<"Must be builder to place block">>}]),
+                  {reply, {text, Res}, State}
+          end;
+        <<"update">> -> 
+            case (State) of
+                {runner, ID} ->
+                    case (maps:get(<<"pos">>, Json, nopos)) of
+                        nopos -> Res = jsx:encode([{<<"error">>, <<"Specify a position">>}]),
+                        {reply, {text, Res}, State};
+                        Pos -> runners_state ! {update, ID, Pos},
+                        {ok, State}
+                    end;
+                 _ -> Res = jsx:encode([{<<"error">>, <<"Not a runner">>}]),
+                     {reply, {text, Res}, State}
+            end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
         Type   -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
@@ -51,6 +64,26 @@ json_cast(Json, State) ->
 % For handling calls based on decoded JSON data
 json_call(Json, State) ->
     case (maps:get(<<"type">>, Json, notype)) of
+        <<"become-builder">> -> 
+            builders_state ! {add_builder, self()},
+            receive
+                {id, ID} -> 
+                    Res = jsx:encode(#{<<"id">> => ID}),
+                    {reply, {text, Res}, {builder, ID}}
+            end;
+        <<"get-builders">> -> 
+            builders_state ! {report, self()},
+            receive 
+                {builders, _, IDs} -> broadcaster ! {json, IDs},
+                {ok, State}
+            end;
+        <<"become-runner">> -> 
+                runners_state ! {add_runner, self()},
+                receive 
+                    {id, ID} ->
+                        Res = jsx:encode(#{<<"id">> => ID}),
+                        {reply, {text, Res}, {runner, ID}}
+                end;
         notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
                   {reply, {text, Res}, State};
         _      -> Res = jsx:encode([{<<"error">>, <<"unrecognized call type">>}]),

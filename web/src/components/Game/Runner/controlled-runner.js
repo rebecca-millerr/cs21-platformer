@@ -4,11 +4,11 @@ import Matter from 'matter-js';
 import RunnerSprite from './sprite';
 
 export default class Runner {
-  constructor(world, color) {
+  constructor(world, startingX, color) {
     this.world = world;
     this.sprite = new RunnerSprite(50, color);
     this.body = Matter.Bodies.rectangle(
-      400,
+      startingX,
       100,
       this.sprite.width * 0.33,
       this.sprite.height,

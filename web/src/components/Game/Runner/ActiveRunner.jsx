@@ -1,10 +1,12 @@
-import { useRef, useEffect } from 'react';
-
-import { useGameContext } from '../Game';
-
 import Matter from 'matter-js';
-import useStore from 'store';
 import Runner from './controlled-runner';
+
+import { useRef, useEffect, useMemo } from 'react';
+import { useGameContext } from '../Game';
+import { throttle } from 'lodash';
+import useStore from 'store';
+
+import { BLOCK_SIZE } from '../constants';
 
 function renderActiveRunner(gameContext) {
   const canvasContext = gameContext.canvasContextRef.current;
@@ -37,23 +39,35 @@ function renderActiveRunner(gameContext) {
 
 /* Runner that is controlled by this player */
 export default function ActiveRunner() {
-  const { renderer, world, events } = useGameContext();
+  const { renderer, world, events, socket, xOffsetRef } = useGameContext();
   const playerColor = useStore((state) => state.playerColor);
 
   // Create the active runner and add it to the world
   const runnerRef = useRef();
   useEffect(() => {
-    runnerRef.current = new Runner(world, playerColor);
-    return () => runnerRef.current.remove();
-  }, [world, playerColor]);
+    const createRunner = () => {
+      runnerRef.current = new Runner(
+        world,
+        xOffsetRef.current + BLOCK_SIZE * 2,
+        playerColor
+      );
+      events.off('positionFound', createRunner);
+    };
+    events.on('positionFound', createRunner);
+
+    return () => {
+      events.off('positionFound', createRunner);
+      if (runnerRef.current) runnerRef.current.remove();
+    };
+  }, [world, events, xOffsetRef]);
 
   // Set up support for rendering the active player
   useEffect(() => renderer.addPass(renderActiveRunner), [renderer]);
 
   // Set up key event handling
   useEffect(() => {
-    const onKeyDown = (e) => runnerRef.current.onKeyDown(e);
-    const onKeyUp = (e) => runnerRef.current.onKeyUp(e);
+    const onKeyDown = (e) => runnerRef.current?.onKeyDown?.(e);
+    const onKeyUp = (e) => runnerRef.current?.onKeyUp?.(e);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     return () => {
@@ -62,12 +76,25 @@ export default function ActiveRunner() {
     };
   });
 
+  const sendServerUpdate = useMemo(
+    () =>
+      throttle(() => {
+        if (!runnerRef.current) return;
+        const { x, y } = runnerRef.current.body.position;
+        socket.cast('update', { pos: { x, y } }).catch(() => {});
+      }, 50),
+    [socket]
+  );
+
   // Let runner perform necessary updates to itself on every frame
   useEffect(() => {
-    const update = () => runnerRef.current.update();
+    const update = () => {
+      runnerRef.current?.update?.();
+      sendServerUpdate();
+    };
     events.on('beforeFrame', update);
     return () => events.off('beforeFrame', update);
-  }, [events, runnerRef]);
+  }, [events, runnerRef, sendServerUpdate]);
 
   return null;
 }
