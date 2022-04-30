@@ -11,7 +11,8 @@ broadcast_message(Message, [Pid | Pids]) ->
 % does not change the list nor send an error if the pid is not found
 remove_subscriber(_Pid, []) -> [];
 remove_subscriber(Pid,  [Pid  | Pids]) -> Pids;
-remove_subscriber(Pid, [Pid0 | Pids]) -> [Pid0 | remove_subscriber(Pid, Pids) ].
+remove_subscriber(Pid, [Pid0 | Pids]) 
+    -> [Pid0 | remove_subscriber(Pid, Pids) ].
 
 
 server_loop(State) ->

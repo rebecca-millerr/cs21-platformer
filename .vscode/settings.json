@@ -2,4 +2,5 @@
   "eslint.workingDirectories": [
     "web"
   ],
+  "editor.rulers": [80, 100]
 }

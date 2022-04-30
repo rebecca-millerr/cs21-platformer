@@ -20,6 +20,6 @@ count_loop(N) ->
 start() ->
     % TODO: handle errors here?
     {ok, _TRefIncr} = timer:send_interval(125, {increment}), % 8 ticks / s
-    {ok, _TRefBdct} = timer:send_interval(250, {broadcast}), % 4 broadcasts / s
+    {ok, _TRefBdct} = timer:send_interval(500, {broadcast}), % 2 broadcasts / s
     count_loop(0).
 

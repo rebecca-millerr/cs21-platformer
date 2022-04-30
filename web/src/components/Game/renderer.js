@@ -33,7 +33,7 @@ export function renderGrid({ canvasContextRef, xOffsetRef }) {
   const xOffset = xOffsetRef.current;
 
   // Latitude lines
-  canvasContext.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  canvasContext.strokeStyle = 'rgba(0, 0, 0, 0.1)';
   for (let y = 0; y <= BLOCKS_DOWN; y += 1) {
     canvasContext.beginPath();
     canvasContext.moveTo(0, y * BLOCK_SIZE);
@@ -66,8 +66,8 @@ class Renderer {
   }
 
   draw(gameContext) {
-    const canvasContext = gameContext.canvasContextRef.current;
-    canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+    const canvasCtx = gameContext.canvasContextRef.current;
+    canvasCtx.clearRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
     this.passes.forEach((pass) => pass(gameContext));
   }
 }

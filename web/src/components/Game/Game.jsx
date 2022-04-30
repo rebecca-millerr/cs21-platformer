@@ -1,4 +1,6 @@
-import React, { useMemo, useCallback, useRef, useEffect, createContext, useContext } from 'react';
+import React, {
+  useMemo, useCallback, useRef, useEffect, createContext, useContext,
+} from 'react';
 import PropTypes from 'prop-types';
 
 import { BLOCKS_ACROSS, BLOCKS_DOWN, BLOCK_SIZE } from './constants';
@@ -53,18 +55,22 @@ export default function Game({ children, playerType }) {
 
     const oldXOffset = xOffsetRef.current;
     xOffsetRef.current = interpolatedXOffset.get();
-    if (oldXOffset === 0 && xOffsetRef.current !== 0) events.emit('positionFound');
+    if (oldXOffset === 0 && xOffsetRef.current !== 0) {
+      events.emit('positionFound');
+    }
 
     events.emit('beforeFrame', { delta });
 
     // Run physics simulation
-    // If more than 1 / 60 of a second has elapsed, run the simulation in little steps
+    // If more than 1 / 60 of a second has elapsed, run the simulation in little
+    // steps
     const maxDelta = 1000 / 60;
-    // subSteps > 0 iff more than 1/60 secs elapsed; if delta < maxDelta the loop doesn't run
-    const subSteps = Math.floor(delta / maxDelta);
-    for (let i = 0; i < subSteps; i += 1) Matter.Engine.update(engine, maxDelta);
+    // subSteps > 0 iff more than 1/60 secs elapsed; if delta < maxDelta the
+    // loop doesn't run
+    const steps = Math.floor(delta / maxDelta);
+    for (let i = 0; i < steps; i += 1) Matter.Engine.update(engine, maxDelta);
     // Get over the finish line to the proper delta we're trying to reach
-    Matter.Engine.update(engine, (delta - (subSteps * maxDelta)));
+    Matter.Engine.update(engine, (delta - (steps * maxDelta)));
 
     // Paint the picture
     renderer.draw(gameContext);
@@ -96,7 +102,8 @@ export default function Game({ children, playerType }) {
       Matter.Composite.allBodies(world).forEach((body) => {
         const { vertices } = body;
         const leftEdge = xOffsetRef.current;
-        // Every vertex is off the left edge of the screen by at least BLOCK_SIZE pixels
+        // Every vertex is off the left edge of the screen by at least
+        // BLOCK_SIZE pixels
         if (vertices.every(({ x }) => x < leftEdge - BLOCK_SIZE)) {
           Matter.Composite.remove(world, body);
         }
@@ -107,12 +114,21 @@ export default function Game({ children, playerType }) {
   }, [world, events, xOffsetRef]);
 
 
+  const contextValue = useMemo(
+    () => ({ ...gameContext, renderer }),
+    [gameContext, renderer],
+  );
   return (
-    <GameContext.Provider
-      value={useMemo(() => ({ ...gameContext, renderer }), [gameContext, renderer])}
-    >
-      <div className={cx('base')} style={{ width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`, height: `${BLOCKS_DOWN * BLOCK_SIZE}px` }}>
-        <canvas ref={canvasRef} className={cx('canvas')} />
+    <GameContext.Provider value={contextValue}>
+      <div className={cx('base')}>
+        <canvas
+          ref={canvasRef}
+          className={cx('canvas')}
+          style={{
+            width: `${BLOCKS_ACROSS * BLOCK_SIZE}px`,
+            height: `${BLOCKS_DOWN * BLOCK_SIZE}px`,
+          }}
+        />
         {children}
       </div>
     </GameContext.Provider>

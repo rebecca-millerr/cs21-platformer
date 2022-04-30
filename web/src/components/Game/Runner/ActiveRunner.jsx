@@ -20,14 +20,11 @@ function renderActiveRunner(gameContext) {
     const { sprite } = body.render;
     const renderedRunner = sprite.getCanvas();
     const { width, height } = renderedRunner;
-    canvasContext.drawImage(renderedRunner, x - (width / 2) - xOffset, y - (height / 2));
+    canvasContext.drawImage(
+      renderedRunner,
+      x - (width / 2) - xOffset, y - (height / 2),
+    );
     sprite.tick();
-    // Debug: draw vertices of underlying body
-    canvasContext.beginPath();
-    body.vertices.forEach((vert) => canvasContext.lineTo(vert.x - xOffset, vert.y));
-    canvasContext.closePath();
-    canvasContext.strokeStyle = '#000';
-    canvasContext.stroke();
   });
 }
 
@@ -39,7 +36,9 @@ export default function ActiveRunner() {
   const runnerRef = useRef();
   useEffect(() => {
     const createRunner = () => {
-      runnerRef.current = new Runner(world, xOffsetRef.current + (BLOCK_SIZE * 2));
+      runnerRef.current = new Runner(
+        world, xOffsetRef.current + (BLOCK_SIZE * 2),
+      );
       events.off('positionFound', createRunner);
     };
     events.on('positionFound', createRunner);

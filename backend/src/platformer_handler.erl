@@ -34,19 +34,23 @@ json_cast(Json, State) ->
         (<<"place">>) ->
           case(State) of
             {builder, ID} -> 
-              canvas_state ! {place, #{builder => ID, pos => maps:get(<<"block">>, Json)}},
+              canvas_state ! 
+                {place, #{builder => ID, pos => maps:get(<<"block">>, Json)}},
               broadcaster  ! {json,
                   #{<<"newblock">> =>
                     #{builder => ID, pos => maps:get(<<"block">>, Json)}}},
               {ok, State};
-            _  -> Res = jsx:encode([{<<"error">>, <<"Must be builder to place block">>}]),
+            _  -> Res = jsx:encode([{<<"error">>, 
+                                     <<"Must be builder to place block">>}]),
                   {reply, {text, Res}, State}
           end;
         <<"update">> -> 
             case (State) of
                 {runner, ID} ->
                     case (maps:get(<<"pos">>, Json, nopos)) of
-                        nopos -> Res = jsx:encode([{<<"error">>, <<"Specify a position">>}]),
+                        nopos 
+                            -> Res = jsx:encode([{<<"error">>, 
+                                                  <<"Specify a position">>}]),
                         {reply, {text, Res}, State};
                         Pos -> runners_state ! {update, ID, Pos},
                         {ok, State}
@@ -54,9 +58,11 @@ json_cast(Json, State) ->
                  _ -> Res = jsx:encode([{<<"error">>, <<"Not a runner">>}]),
                      {reply, {text, Res}, State}
             end;
-        notype -> Res = jsx:encode([{<<"error">>, <<"Must specify cast type">>}]),
+        notype -> Res = jsx:encode([{<<"error">>, 
+                                     <<"Must specify cast type">>}]),
                   {reply, {text, Res}, State};
-        Type   -> Res = jsx:encode([{<<"error">>, <<"unrecognized cast type">>}]),
+        Type   -> Res = jsx:encode([{<<"error">>, 
+                                     <<"unrecognized cast type">>}]),
                   io:format("~w~n~w~n", [Type, Json]),
                   {reply, {text, Res}, State}
     end.
@@ -84,9 +90,11 @@ json_call(Json, State) ->
                         Res = jsx:encode(#{<<"id">> => ID}),
                         {reply, {text, Res}, {runner, ID}}
                 end;
-        notype -> Res = jsx:encode([{<<"error">>, <<"Must specify call type">>}]),
+        notype -> Res = jsx:encode([{<<"error">>, 
+                                     <<"Must specify call type">>}]),
                   {reply, {text, Res}, State};
-        _      -> Res = jsx:encode([{<<"error">>, <<"unrecognized call type">>}]),
+        _      -> Res = jsx:encode([{<<"error">>, 
+                                     <<"unrecognized call type">>}]),
                   {reply, {text, Res}, State}
     end.
 
@@ -108,10 +116,14 @@ websocket_handle({text, Data}, State) ->
                  if
                      Call -> json_call(Map, State);
                      Cast -> json_cast(Map, State);
-                     true -> Res = jsx:encode([{<<"error">>, <<"Must specify call or cast">>}]),
+                     true 
+                        -> Res = jsx:encode(
+                                    [{<<"error">>, 
+                                      <<"Must specify call or cast">>}]),
                              {reply, {text, Res}, State}
                  end;
-        false -> Res = jsx:encode([{<<"error">>, <<"Message is not valid JSON">>}]),
+        false -> Res = jsx:encode([{<<"error">>, 
+                                    <<"Message is not valid JSON">>}]),
                  {reply, {text, Res}, State}
     end;
 websocket_handle({binary, Data}, State) ->

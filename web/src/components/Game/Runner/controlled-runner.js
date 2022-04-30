@@ -6,7 +6,7 @@ import RunnerSprite from './sprite';
 export default class Runner {
   constructor(world, startingX) {
     this.world = world;
-    this.sprite = new RunnerSprite(50);
+    this.sprite = new RunnerSprite();
     this.body = Matter.Bodies.rectangle(
       startingX, 100, this.sprite.width * 0.33, this.sprite.height,
       {
@@ -43,12 +43,12 @@ export default class Runner {
 
   isStanding() {
     const runnerBounds = Matter.Bounds.create(this.body.vertices);
-    const platformDetectionBounds = {
+    const detectionBounds = {
       min: { x: runnerBounds.min.x, y: runnerBounds.max.y },
       max: { x: runnerBounds.max.x, y: runnerBounds.max.y + 1 },
     };
     const bodies = Matter.Composite.allBodies(this.world);
-    const bodiesStandingOn = Matter.Query.region(bodies, platformDetectionBounds)
+    const bodiesStandingOn = Matter.Query.region(bodies, detectionBounds)
       .filter((body) => ['ground', 'platform'].includes(body.label));
     return bodiesStandingOn.length > 0;
   }
@@ -62,8 +62,12 @@ export default class Runner {
     // Player movement
 
     // Moving left / right
-    if (movingLeft) Matter.Body.setVelocity(this.body, { x: -2, y: this.body.velocity.y });
-    if (movingRight) Matter.Body.setVelocity(this.body, { x: 2, y: this.body.velocity.y });
+    if (movingLeft) {
+      Matter.Body.setVelocity(this.body, { x: -2, y: this.body.velocity.y });
+    }
+    if (movingRight) {
+      Matter.Body.setVelocity(this.body, { x: 2, y: this.body.velocity.y });
+    }
     // jumping
     if (this.upPressed && standing) {
       Matter.Body.setVelocity(this.body, { x: this.body.velocity.x, y: -5 });

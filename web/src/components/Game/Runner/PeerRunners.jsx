@@ -12,7 +12,8 @@ export default function PeerRunners() {
     const handleMessage = ({ runners }) => {
       if (!runners) return;
       const trackedIds = Object.keys(peerRunners.current);
-      const currentIds = Object.keys(runners).filter((id) => playerType === 'builder' || id !== ownId?.toString?.());
+      const currentIds = Object.keys(runners)
+        .filter((id) => playerType === 'builder' || id !== ownId?.toString?.());
 
       const lostIds = trackedIds.filter((id) => !currentIds.includes(id));
       const newIds = currentIds.filter((id) => !trackedIds.includes(id));
@@ -48,13 +49,17 @@ export default function PeerRunners() {
       const x = runner.x.getCurrentValueWithFallback()?.x;
       const y = runner.y.getCurrentValueWithFallback()?.x;
       if (!x || !y) return;
-      const width = 22;
-      const height = 50;
+      const width = 16.5;
+      const height = 37;
       canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      canvasContext.fillRect(x - (width / 2) - xOffset, y - (height / 2), width, height);
+      canvasContext
+        .fillRect(x - (width / 2) - xOffset, y - (height / 2), width, height);
     });
   }, [canvasContextRef, xOffsetRef]);
-  useEffect(() => renderer.addPass(renderPeerRunners), [renderer, renderPeerRunners]);
+  useEffect(
+    () => renderer.addPass(renderPeerRunners),
+    [renderer, renderPeerRunners],
+  );
 
   return null;
 }

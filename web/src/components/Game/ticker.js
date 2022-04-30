@@ -1,4 +1,5 @@
-// Provides smooth interpolated X position based on timekeeping "ticks" from the server
+// Provides smooth interpolated X position based on timekeeping "ticks" from the
+// server
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 
@@ -11,13 +12,14 @@ const ticksToX = (ticks) => (ticks / TICKS_PER_SECOND) * MOVING_SPEED;
 
 export default function useInterpolatedXOffset(events) {
   const getter = useRef({ get: () => 0 });
-  const interp = useMemo(() => new StreamingInterpolator(750), []);
+  const interp = useMemo(() => new StreamingInterpolator(1500), []);
 
   // Update the getter to be functional once we get an initial value
   const [initialX, setInitialX] = useState(null);
   useEffect(() => {
     if (!initialX) return;
-    getter.current.get = () => interp.getCurrentValueWithFallback([initialX, 0]).x;
+    getter.current.get = () => interp
+      .getCurrentValueWithFallback([initialX, 0]).x;
   }, [interp, initialX]);
 
 
